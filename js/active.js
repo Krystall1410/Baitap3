@@ -98,6 +98,7 @@
     return number.toLocaleString('vi-VN');
 }
 
+
     $('.slider-range-price').each(function () {
         var min = jQuery(this).data('min');
         var max = jQuery(this).data('max');
