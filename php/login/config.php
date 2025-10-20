@@ -5,7 +5,7 @@
  */
 define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'root'); // Tên người dùng CSDL, thường là 'root' trên localhost
-define('DB_PASSWORD', ''); // Mật khẩu CSDL, thường là trống trên XAMPP
+define('DB_PASSWORD', '271105'); // Mật khẩu CSDL, thường là trống trên XAMPP
 define('DB_NAME', 'my_shop_db'); // Tên CSDL bạn đã tạo
 
 /* Cố gắng kết nối đến CSDL MySQL */
