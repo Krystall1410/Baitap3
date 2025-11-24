@@ -1,15 +1,15 @@
 <?php
 
 session_start();
-// Nếu người dùng đã đăng nhập, chuyển hướng họ đi
- if ($_SESSION['role'] === 'admin') {
-       header('Location: admin.php');
-       header('Location: /baitap3/php/login/admin.php');
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
+        header('Location: /baitap3/php/login/admin.php');
+        exit;
     } else {
-        header('Location: shop.html');
-        header('Location: /baitap3/index.html');
-   exit;
+        header('Location: /baitap3/shop.html');
+        exit;
     }
+}
 
 // Kiểm tra cookie "remember me" và verify từ DB
 $saved_username = '';

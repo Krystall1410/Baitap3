@@ -1,8 +1,7 @@
 <?php
-// Bắt đầu session
 session_start();
 
-// Include tệp cấu hình CSDL
+
 require_once "config.php";
 
 // Kiểm tra xem dữ liệu đã được gửi đi chưa
