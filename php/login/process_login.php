@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             exit;
                         } else {
                             header("Location: index.html");
-                           header("Location: /baitap3/index.html");
+                           header("Location: /baitap3/index.php");
                             exit;
                         }
 

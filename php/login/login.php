@@ -6,7 +6,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
         header('Location: /baitap3/php/login/admin.php');
         exit;
     } else {
-        header('Location: /baitap3/shop.html');
+        header('Location: /baitap3/shop.php');
         exit;
     }
 }
@@ -37,7 +37,7 @@ if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
                 if ($role === 'admin') {
                     header('Location: admin.php');
                 } else {
-                    header('Location: shop.html');
+                    header('Location: shop.php');
                 }
                 exit;
             }

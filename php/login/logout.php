@@ -13,6 +13,6 @@ session_destroy();
 if (isset($_COOKIE['username'])) {
     setcookie('username', '', time() - 3600, "/");
 }
-header('Location: /Baitap3/login.html');
+header('Location: /Baitap3/login.php');
 exit;
 ?>
