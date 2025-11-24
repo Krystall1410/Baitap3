@@ -1,11 +1,6 @@
 <?php
-/*
-Đây là tệp cấu hình cơ sở dữ liệu.
-Hãy thay đổi các giá trị này cho phù hợp với môi trường của bạn.
-*/
 
-// Thông tin kết nối CSDL
-define('DB_SERVER', '127.0.0.1:3307'); // <-- THAY ĐỔI QUAN TRỌNG Ở ĐÂY
+define('DB_SERVER', '127.0.0.1:3307'); 
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_NAME', 'my_shop_db');
