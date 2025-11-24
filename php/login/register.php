@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -6,7 +7,6 @@
     <title>Đăng ký tài khoản</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap&subset=vietnamese" rel="stylesheet">
     <style>
-        /* Sử dụng lại style của trang đăng nhập */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: #f4f4f4;
@@ -29,33 +29,61 @@
             margin-bottom: 20px;
             color: #333;
         }
-        .register-container input {
+        .register-container input[type="text"],
+        .register-container input[type="password"],
+        .register-container select {
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 15px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         .register-container button {
             width: 100%;
             padding: 12px;
             border: none;
             border-radius: 4px;
-            background-color: #28a745;
+            background-color: #fbb710;
             color: white;
             font-size: 16px;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         .register-container button:hover {
-            background-color: #218838;
+            background-color: #c9960c;
+        }
+        .remember-me {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .error-message {
+            color: #d9534f;
+            margin-bottom: 15px;
         }
         .message {
             margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
         }
-        .error { color: #d9534f; }
-        .success { color: #28a745; }
-        .login-link { margin-top: 15px; }
+        .message.success {
+            background: #e6f7ea;
+            color: #2b8a3e;
+            border: 1px solid #c7eed1;
+        }
+        .message.error {
+            background: #fff0f0;
+            color: #d9534f;
+            border: 1px solid #f3c7c7;
+        }
+        .login-link {
+            margin-top: 12px;
+            color: #555;
+        }
+        .login-link a {
+            color: #fbb710;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
@@ -75,14 +103,6 @@
         <form action="process_register.php" method="post">
             <input type="text" name="username" placeholder="Tên đăng nhập" required>
             <input type="password" name="password" placeholder="Mật khẩu" required>
-            <!-- Thêm trường role cho admin, có thể ẩn đi sau này -->
-            <div>
-                <label for="role">Vai trò:</label>
-                <select name="role" id="role">
-                    <option value="customer">Khách hàng</option>
-                    <option value="admin">Quản trị viên (Admin)</option>
-                </select>
-            </div>
             <br>
             <button type="submit">Đăng ký</button>
         </form>

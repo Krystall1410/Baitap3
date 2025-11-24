@@ -1,56 +1,52 @@
 <?php
-// Include tệp cấu hình CSDL
+session_start();
+
 require_once "config.php";
 
-// Kiểm tra xem form đã được gửi đi chưa
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = trim($_POST["username"]);
-    $password = trim($_POST["password"]);
-    $role = trim($_POST["role"]);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = trim($_POST['username']);
+    $password = $_POST['password'];
 
-    // --- KIỂM TRA TÊN ĐĂNG NHẬP CÓ TỒN TẠI CHƯA ---
-    $sql_check = "SELECT id FROM users WHERE username = ?";
-    if ($stmt_check = $mysqli->prepare($sql_check)) {
-        $stmt_check->bind_param("s", $username);
-        $stmt_check->execute();
-        $stmt_check->store_result();
-
-        if ($stmt_check->num_rows > 0) {
-            // Tên đăng nhập đã tồn tại
-            header("Location: register.php?status=exists");
-            exit();
-        }
-        $stmt_check->close();
+    if ($username === '' || $password === '') {
+        header("Location: register.php?status=error");
+        exit;
     }
-    // ---------------------------------------------
 
-    // --- THÊM NGƯỜI DÙNG MỚI VÀO CSDL ---
-    // Chuẩn bị câu lệnh INSERT
-    $sql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
-
-    if ($stmt = $mysqli->prepare($sql)) {
-        // Mã hóa mật khẩu để tăng cường bảo mật
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // Gắn các biến vào câu lệnh đã chuẩn bị
-        // "sss" có nghĩa là 3 tham số đều là kiểu string (chuỗi)
-        $stmt->bind_param("sss", $username, $hashed_password, $role);
-
-        // Thực thi câu lệnh
-        if ($stmt->execute()) {
-            // Đăng ký thành công, chuyển hướng về trang đăng ký với thông báo
-            header("Location: register.php?status=success");
-        } else {
-            // Có lỗi xảy ra
-            header("Location: register.php?status=error");
+    // kiểm tra username đã tồn tại
+    $checkSql = "SELECT id FROM users WHERE username = ?";
+    if ($stmt = $mysqli->prepare($checkSql)) {
+        $stmt->bind_param("s", $username);
+        $stmt->execute();
+        $stmt->store_result();
+        if ($stmt->num_rows > 0) {
+            $stmt->close();
+            $mysqli->close();
+            header("Location: register.php?status=exists");
+            exit;
         }
-
-        // Đóng câu lệnh
         $stmt->close();
     }
-    // -----------------------------------------
 
-    // Đóng kết nối
+    // role mặc định
+    $role = 'user';
+
+    // chèn user mới (mã hoá mật khẩu)
+    $hashed = password_hash($password, PASSWORD_DEFAULT);
+    $insertSql = "INSERT INTO users (username, password, role) VALUES (?, ?, ?)";
+    if ($stmt = $mysqli->prepare($insertSql)) {
+        $stmt->bind_param("sss", $username, $hashed, $role);
+        if ($stmt->execute()) {
+            $stmt->close();
+            $mysqli->close();
+            header("Location: register.php?status=success");
+            exit;
+        } else {
+            $stmt->close();
+        }
+    }
+
     $mysqli->close();
+    header("Location: register.php?status=error");
+    exit;
 }
 ?>

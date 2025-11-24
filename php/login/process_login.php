@@ -1,8 +1,7 @@
 <?php
-// Bắt đầu session
 session_start();
 
-// Include tệp cấu hình CSDL
+
 require_once "config.php";
 
 // Kiểm tra xem dữ liệu đã được gửi đi chưa
@@ -50,18 +49,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         }
 
                         // Chuyển hướng dựa trên vai trò
-                        if ($role === 'admin') {
-                            header("Location: admin.php");
+                       if ($role === 'admin') {
+                           header("Location: admin.php");
+                           header("Location: /baitap3/php/login/admin.php");
                             exit;
                         } else {
-                            header("Location: shop.html");
+                            header("Location: index.html");
+                           header("Location: /baitap3/index.html");
                             exit;
                         }
-                    }
+
+                    }   
                 }
             }
         }
-        // Đóng câu lệnh
         $stmt->close();
     }
     

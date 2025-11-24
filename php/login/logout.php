@@ -1,24 +1,18 @@
 <?php
 session_start();
 
-// Hủy tất cả các biến session
 $_SESSION = array();
-
-// Hủy session
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
+}
 session_destroy();
-
-// Xóa cookie "remember me" nếu có
 if (isset($_COOKIE['username'])) {
-    unset($_COOKIE['username']);
-    setcookie('username', '', time() - 3600, '/'); 
+    setcookie('username', '', time() - 3600, "/");
 }
-if (isset($_COOKIE['password'])) {
-    unset($_COOKIE['password']);
-    setcookie('password', '', time() - 3600, '/');
-}
-
-
-// Chuyển hướng về trang đăng nhập
-header("Location: login.php");
+header('Location: /baitap3/index.html');
 exit;
 ?>
