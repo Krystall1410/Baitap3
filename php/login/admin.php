@@ -18,7 +18,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
       <meta name="viewport" content="width=device-width, initial-scale=1">
       <meta name="viewport" content="initial-scale=1, maximum-scale=1">
       <!-- site metas -->
-      <title>Pluto - Responsive Bootstrap Admin Panel Templates</title>
+      <title>Admin trang chủ</title>
       <meta name="keywords" content="">
       <meta name="description" content="">
       <meta name="author" content="">
@@ -47,7 +47,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
                <div class="sidebar_blog_1">
                   <div class="sidebar-header">
                      <div class="logo_section">
-                        <a href="index.html"><img class="logo_icon img-responsive" src="images/logo/logo_icon.png" alt="#" /></a>
+                       
                      </div>
                   </div>
                   <div class="sidebar_user_info">
@@ -55,21 +55,20 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
                      <div class="user_profle_side">
                         
                         <div class="user_info">
-                           <h6>John David</h6>
+                           <h6>Admin</h6>
                            <p><span class="online_animation"></span> Online</p>
                         </div>
                      </div>
                   </div>
                </div>
                <div class="sidebar_blog_2">
-                  <h4>General</h4>
+                  <h4>Khu vực</h4></h4>
                   <ul class="list-unstyled components">
                      <li class="active">
-                        <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Dashboard</span></a>
+                        <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Danh Mục</span></a>
                         <ul class="collapse list-unstyled" id="dashboard">
-                           <li>
-                              <a href="dashboard.html">> <span>Default Dashboard</span></a>
-                           </li>
+                           <li><a href="/baitap3/php/admin/products.php">Sản phẩm — Danh sách</a></li>                           
+                           
                         </ul>
                      </li>
                </div>
@@ -88,12 +87,11 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
                               
                               <ul class="user_profile_dd">
                                  <li>
-                                    <a class="dropdown-toggle" data-toggle="dropdown"><img class="img-responsive rounded-circle" src="#" alt="#" /><span class="name_user">John David</span></a>
+                                    <a class="dropdown-toggle" data-toggle="dropdown"><span class="name_user">Admin</span></a>
                                     <div class="dropdown-menu">
                                        <a class="dropdown-item" href="logout.php">Đăng xuất</a>
                                        <a class="dropdown-item" href="/Baitap3/php/home/back_home.php">Quay về trang mua sắm</a>
-                                       <a class="dropdown-item" href="help.html">Help</a>
-                                       <a class="dropdown-item" href="#"><span>Log Out</span> <i class="fa fa-sign-out"></i></a>
+                                      
                                     </div>
                                  </li>
                               </ul>
