@@ -4,6 +4,7 @@ session_start();
 
 require_once "config.php";
 
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST['username'];
     $password = $_POST['password'];
@@ -47,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             exit;
                         } else {
                             header("Location: index.html");
-                           header("Location: /baitap3/index.php");
+                           header("Location: /baitap3/index.html");
                             exit;
                         }
 
