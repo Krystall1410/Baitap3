@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once __DIR__ . '/../login/config.php';
 
 // kiểm tra admin
@@ -20,7 +19,7 @@ $res = $mysqli->query($sql);
   <link rel="stylesheet" href="/baitap3/assets/css/bootstrap.min.css">
 </head>
 <body class="p-4">
-  <h2>Danh sách sản phẩm <a href="product_form.php" class="btn btn-sm btn-primary">Thêm mới</a></h2>
+  <h2>Danh sách sản phẩm <a href="admin.php?page=product_form" class="btn btn-sm btn-primary">Thêm mới</a></h2>
   <table class="table table-striped">
     <thead><tr><th>#</th><th>Tên</th><th>Giá</th><th>Kho</th><th>Ảnh</th><th>Hiển thị</th><th>Hành động</th></tr></thead>
     <tbody>
@@ -37,8 +36,8 @@ $res = $mysqli->query($sql);
           </td>
           <td><?= $row['is_active'] ? 'Có' : 'Ẩn' ?></td>
           <td>
-            <a class="btn btn-sm btn-secondary" href="product_form.php?id=<?= $row['id'] ?>">Sửa</a>
-            <a class="btn btn-sm btn-danger" href="delete_product.php?id=<?= $row['id'] ?>" onclick="return confirm('Xoá sản phẩm?')">Xoá</a>
+            <a class="btn btn-sm btn-secondary" href="admin.php?page=product_form&id=<?= $row['id'] ?>">Sửa</a>
+            <a class="btn btn-sm btn-danger" href="admin.php?page=delete_product&id=<?= $row['id'] ?>" onclick="return confirm('Xoá sản phẩm?')">Xoá</a>
           </td>
         </tr>
       <?php endwhile; ?>

@@ -7,6 +7,22 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
     header("Location: login.php");
     exit;
 }
+
+// --- BẮT ĐẦU THAY ĐỔI ---
+// **QUAN TRỌNG**: Xử lý logic trước khi render HTML
+$page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
+
+// Các trang xử lý logic (không có giao diện) sẽ chạy và exit tại đây
+if ($page == 'process_product') {
+   include('../admin/process_product.php');
+   // file process_product.php sẽ tự gọi exit;
+} else if ($page == 'delete_product') {
+   include('../admin/delete_product.php');
+   // file delete_product.php sẽ tự gọi exit;
+}
+// Các trang có giao diện sẽ được include ở phần body bên dưới
+// --- KẾT THÚC THAY ĐỔI ---
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -67,7 +83,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
                      <li class="active">
                         <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Danh Mục</span></a>
                         <ul class="collapse list-unstyled" id="dashboard">
-                           <li><a href="/baitap3/php/admin/products.php">Sản phẩm — Danh sách</a></li>                           
+                           <li><a href="admin.php?page=products">Sản phẩm — Danh sách</a></li>                           
                            
                         </ul>
                      </li>
@@ -76,6 +92,7 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
             <!-- end sidebar -->
             <!-- right content -->
             <div id="content">
+               
                <!-- topbar -->
                <div class="topbar">
                   <nav class="navbar navbar-expand-lg navbar-light">
@@ -100,6 +117,23 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
                      </div>
                   </nav>
                </div>
+   
+               <div class="midde_cont">
+                  <div class="container-fluid">
+                     <?php
+                        // --- THAY ĐỔI ---
+                        // Dựa vào giá trị của 'page' để include file tương ứng
+                        if ($page == 'products') {
+                           include('../admin/products.php');
+                        } else if ($page == 'product_form') {
+                           // Trang thêm/sửa sản phẩm
+                           include('../admin/product_form.php');
+                        }
+                        // Bạn có thể thêm các trường hợp khác ở đây với else if
+                     ?>
+                  </div>
+               </div>
+               <!-- end dashboard inner -->
             </div>
          </div>
       </div>

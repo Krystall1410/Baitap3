@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once __DIR__ . '/../login/config.php';
 if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /baitap3/php/login/login.php'); exit;
@@ -12,6 +11,23 @@ $description = $_POST['description'] ?? '';
 $price = (float)($_POST['price'] ?? 0);
 $stock = (int)($_POST['stock'] ?? 0);
 $is_active = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
+
+// --- BẮT ĐẦU THAY ĐỔI ---
+// Kiểm tra slug có bị trùng không
+$check_slug_stmt = $mysqli->prepare("SELECT id FROM products WHERE slug = ? AND id != ?");
+$current_id_for_check = $id ?? 0; // Nếu là sản phẩm mới, ID là 0 để kiểm tra với tất cả sản phẩm khác
+$check_slug_stmt->bind_param("si", $slug, $current_id_for_check);
+$check_slug_stmt->execute();
+$check_slug_stmt->store_result();
+
+if ($check_slug_stmt->num_rows > 0) {
+    // Nếu slug đã tồn tại, lưu lỗi vào session và quay lại form
+    $_SESSION['form_error'] = "Slug '$slug' đã tồn tại. Vui lòng chọn một slug khác.";
+    $_SESSION['form_data'] = $_POST; // Lưu lại dữ liệu đã nhập để điền lại form
+    header('Location: /baitap3/php/login/admin.php?page=product_form' . ($id ? '&id=' . $id : ''));
+    exit;
+}
+// --- KẾT THÚC THAY ĐỔI ---
 
 // xử lý upload
 $upload_dir = __DIR__ . '/../../uploads/products';
@@ -46,7 +62,11 @@ if ($id) {
 if ($stmt) {
     $ok = $stmt->execute();
     $stmt->close();
+    // --- THAY ĐỔI ---
+    // Xóa dữ liệu form đã lưu nếu thành công
+    unset($_SESSION['form_data']);
+    unset($_SESSION['form_error']);
 }
 
-header('Location: /baitap3/php/admin/products.php');
+header('Location: /baitap3/php/login/admin.php?page=products');
 exit;

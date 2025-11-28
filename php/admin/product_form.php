@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once __DIR__ . '/../login/config.php';
 if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /baitap3/php/login/login.php'); exit;
@@ -7,7 +6,14 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
 
 $id = $_GET['id'] ?? null;
 $product = ['name'=>'','slug'=>'','description'=>'','price'=>'0.00','stock'=>0,'is_active'=>1,'image'=>null];
-if ($id) {
+
+// --- BẮT ĐẦU THAY ĐỔI ---
+// Nếu có lỗi từ session (do slug trùng), lấy lại dữ liệu cũ
+if (isset($_SESSION['form_data'])) {
+    $product = array_merge($product, $_SESSION['form_data']);
+    unset($_SESSION['form_data']);
+} else if ($id) {
+    // Nếu không có lỗi và có ID, lấy dữ liệu từ DB
     $stmt = $mysqli->prepare("SELECT id,name,slug,description,price,stock,is_active,image FROM products WHERE id = ?");
     $stmt->bind_param("i",$id);
     $stmt->execute();
@@ -15,6 +21,7 @@ if ($id) {
     if ($res->num_rows) $product = $res->fetch_assoc();
     $stmt->close();
 }
+// --- KẾT THÚC THAY ĐỔI ---
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -25,7 +32,15 @@ if ($id) {
 </head>
 <body class="p-4">
   <h2><?= $id ? 'Sửa' : 'Thêm' ?> sản phẩm</h2>
-  <form action="process_product.php" method="post" enctype="multipart/form-data">
+  <?php
+    // --- THAY ĐỔI ---
+    // Hiển thị thông báo lỗi nếu có
+    if (isset($_SESSION['form_error'])) {
+        echo '<div class="alert alert-danger">' . $_SESSION['form_error'] . '</div>';
+        unset($_SESSION['form_error']);
+    }
+  ?>
+  <form action="/baitap3/php/login/admin.php?page=process_product" method="post" enctype="multipart/form-data">
     <input type="hidden" name="id" value="<?= htmlspecialchars($id) ?>">
     <div class="form-group">
       <label>Tên</label>
@@ -57,7 +72,7 @@ if ($id) {
       <input type="file" name="image" accept="image/*" class="form-control-file">
     </div>
     <button class="btn btn-primary"><?= $id ? 'Cập nhật' : 'Tạo mới' ?></button>
-    <a class="btn btn-secondary" href="products.php">Quay lại</a>
+    <a class="btn btn-secondary" href="/baitap3/php/login/admin.php?page=products">Quay lại</a>
   </form>
 </body>
 </html>
