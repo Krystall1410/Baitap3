@@ -8,20 +8,17 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// --- BẮT ĐẦU THAY ĐỔI ---
-// **QUAN TRỌNG**: Xử lý logic trước khi render HTML
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
-// Các trang xử lý logic (không có giao diện) sẽ chạy và exit tại đây
+
 if ($page == 'process_product') {
    include('../admin/process_product.php');
-   // file process_product.php sẽ tự gọi exit;
+
 } else if ($page == 'delete_product') {
    include('../admin/delete_product.php');
-   // file delete_product.php sẽ tự gọi exit;
+
 }
-// Các trang có giao diện sẽ được include ở phần body bên dưới
-// --- KẾT THÚC THAY ĐỔI ---
+
 
 ?>
 <!DOCTYPE html>
@@ -38,22 +35,33 @@ if ($page == 'process_product') {
       <meta name="keywords" content="">
       <meta name="description" content="">
       <meta name="author" content="">
+      
       <!-- site icon -->
-      <link rel="icon" href="/Baitap3/images/fevicon.png" type="image/png" />
+      <link rel="icon" href="/baitap3/images/fevicon.png" type="image/png" />
+      <link rel="icon" type="image/png" sizes="16x16"  href="/favicons/favicon-16x16.png">
+      <meta name="msapplication-TileColor" content="#ffffff">
+      <meta name="theme-color" content="#ffffff">
+
       <!-- bootstrap css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/bootstrap.min.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/bootstrap.min.css" />
       <!-- site css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/style.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/style.css" />
       <!-- responsive css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/responsive.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/responsive.css" />
       <!-- color css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/colors.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/colors.css" />
       <!-- select bootstrap -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/bootstrap-select.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/bootstrap-select.css" />
       <!-- scrollbar css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/perfect-scrollbar.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/perfect-scrollbar.css" />
       <!-- custom css -->
-      <link rel="stylesheet" href="/Baitap3/assets/css/custom.css" />
+      <link rel="stylesheet" href="/baitap3/assets/css/custom.css" />
+      <style>
+         .user_profile_dd .dropdown-menu-right {
+            right: 0;
+            left: auto;
+         }
+      </style>
    </head>
    <body class="dashboard dashboard_1">
       <div class="full_container">
@@ -97,7 +105,7 @@ if ($page == 'process_product') {
                <div class="topbar">
                   <nav class="navbar navbar-expand-lg navbar-light">
                      <div class="full">
-                        <button type="button" id="sidebarCollapse" class="sidebar_toggle"><i class="fa fa-bars"></i></button>
+                        <button type="button" id="sidebarCollapse" class="sidebar_toggle"><img src="/baitap3/img/core-img/icon1.png"><i class="fa fa-bars"></i></button>
                         
                         <div class="right_topbar">
                            <div class="icon_info">
@@ -105,9 +113,9 @@ if ($page == 'process_product') {
                               <ul class="user_profile_dd">
                                  <li>
                                     <a class="dropdown-toggle" data-toggle="dropdown"><span class="name_user">Admin</span></a>
-                                    <div class="dropdown-menu">
-                                       <a class="dropdown-item" href="logout.php">Đăng xuất</a>
-                                       <a class="dropdown-item" href="/Baitap3/php/home/back_home.php">Quay về trang mua sắm</a>
+                                    <div class="dropdown-menu dropdown-menu-right">
+                                       <a class="dropdown-item" href="/baitap3/php/login/logout.php">Đăng xuất</a>
+                                       <a class="dropdown-item" href="/baitap3/php/home/back_home.php">Trang chủ</a>
                                       
                                     </div>
                                  </li>
@@ -133,32 +141,32 @@ if ($page == 'process_product') {
                      ?>
                   </div>
                </div>
-               <!-- end dashboard inner -->
+     
             </div>
          </div>
       </div>
       <!-- jQuery -->
-      <script src="/Baitap3/assets/js/jquery.min.js"></script>
-      <script src="/Baitap3/assets/js/popper.min.js"></script>
-      <script src="/Baitap3/assets/js/bootstrap.min.js"></script>
+      <script src="/baitap3/assets/js/jquery.min.js"></script>
+      <script src="/baitap3/assets/js/popper.min.js"></script>
+      <script src="/baitap3/assets/js/bootstrap.min.js"></script>
       <!-- wow animation -->
-      <script src="/Baitap3/assets/js/animate.js"></script>
+      <script src="/baitap3/assets/js/animate.js"></script>
       <!-- select country -->
-      <script src="/Baitap3/assets/js/bootstrap-select.js"></script>
+      <script src="/baitap3/assets/js/bootstrap-select.js"></script>
       <!-- owl carousel -->
-      <script src="/Baitap3/assets/js/owl.carousel.js"></script> 
+      <script src="/baitap3/assets/js/owl.carousel.js"></script> 
       <!-- chart js -->
-      <script src="/Baitap3/assets/js/Chart.min.js"></script>
-      <script src="/Baitap3/assets/js/Chart.bundle.min.js"></script>
-      <script src="/Baitap3/assets/js/utils.js"></script>
-      <script src="/Baitap3/assets/js/analyser.js"></script>
+      <script src="/baitap3/assets/js/Chart.min.js"></script>
+      <script src="/baitap3/assets/js/Chart.bundle.min.js"></script>
+      <script src="/baitap3/assets/js/utils.js"></script>
+      <script src="/baitap3/assets/js/analyser.js"></script>
       <!-- nice scrollbar -->
-      <script src="/Baitap3/assets/js/perfect-scrollbar.min.js"></script>
+      <script src="/baitap3/assets/js/perfect-scrollbar.min.js"></script>
       <script>
          var ps = new PerfectScrollbar('#sidebar');
       </script>
       <!-- custom js -->
-      <script src="/Baitap3/assets/js/custom.js"></script>
-      <script src="/Baitap3/assets/js/chart_custom_style1.js"></script>
+      <script src="/baitap3/assets/js/custom.js"></script>
+      <script src="/baitap3/assets/js/chart_custom_style1.js"></script>
    </body>
 </html>
