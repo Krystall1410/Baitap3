@@ -29,7 +29,14 @@ function move_upload_file(array $file, string $upload_dir, array $allowed_extens
         return null;
     }
     $new_filename = uniqid('p_') . '.' . $extension;
-    return move_uploaded_file($tmp_name, $upload_dir . '/' . $new_filename) ? $new_filename : null;
+    $destination = $upload_dir . '/' . $new_filename;
+
+    if (move_uploaded_file($tmp_name, $destination)) {
+        return $new_filename;
+    } else {
+        $_SESSION['form_error'] = "Lỗi: Không thể di chuyển tệp đã tải lên. Vui lòng kiểm tra quyền ghi của thư mục '{$upload_dir}'.";
+        return null;
+    }
 }
 
 if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
@@ -48,6 +55,21 @@ $brand_id = !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null;
 $upload_dir = __DIR__ . '/../../uploads/products';
 $image_name = isset($_FILES['image']) ? move_upload_file($_FILES['image'], $upload_dir) : null;
 
+// Nếu có lỗi xảy ra trong quá trình tải tệp (ví dụ: sai định dạng, không có quyền ghi),
+// hàm move_upload_file sẽ trả về null và đặt một thông báo lỗi trong $_SESSION['form_error'].
+// Chúng ta cần dừng xử lý, lưu lại dữ liệu đã nhập và chuyển hướng người dùng trở lại form.
+if (isset($_SESSION['form_error'])) {
+    // Lưu lại dữ liệu người dùng đã nhập vào session để điền lại form
+    $_SESSION['form_data'] = $_POST;
+    // Chuyển hướng trở lại trang form (thêm hoặc sửa)
+    $redirect_url = '/baitap3/php/login/admin.php?page=product_form';
+    if ($id) {
+        $redirect_url .= '&id=' . $id;
+    }
+    header('Location: ' . $redirect_url);
+    exit;
+}
+
 if ($id) {
     // Chỉnh sửa sản phẩm
     $old_image = null;
@@ -58,8 +80,14 @@ if ($id) {
     $stmt_old->fetch();
     $stmt_old->close();
     
-    // Nếu không có ảnh mới được tải lên, sử dụng lại tên ảnh cũ
-    if ($image_name === null) {
+    // Nếu có ảnh mới được tải lên thành công, và có ảnh cũ, thì xóa ảnh cũ đi.
+    if ($image_name !== null && $old_image) {
+        $old_image_path = $upload_dir . '/' . $old_image;
+        if (is_file($old_image_path)) {
+            @unlink($old_image_path);
+        }
+    } elseif ($image_name === null) {
+        // Nếu không có ảnh mới được tải lên (hoặc tải lỗi), giữ lại ảnh cũ.
         $image_name = $old_image;
     }
 
@@ -73,16 +101,8 @@ if ($id) {
 
 if ($stmt) {
     $ok = $stmt->execute();
-    // Nếu cập nhật thành công, có ảnh cũ và tên ảnh mới khác tên ảnh cũ, thì xóa ảnh cũ.
-    if ($ok && isset($old_image) && $image_name !== $old_image) {
-        $old_image_path = $upload_dir . '/' . $old_image;
-        if (is_file($old_image_path)) {
-            @unlink($old_image_path);
-        }
-    }
     $stmt->close();
-    // --- THAY ĐỔI ---
-    // Xóa dữ liệu form đã lưu nếu thành công
+    // Xóa dữ liệu form và lỗi chỉ khi thực thi thành công
     unset($_SESSION['form_data']);
     unset($_SESSION['form_error']);
 }

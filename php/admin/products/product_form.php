@@ -93,7 +93,7 @@ while ($brand_row = $brand_res->fetch_assoc()) $brands[] = $brand_row;
             <label>Ảnh chính (jpg/png)</label>
             <?php if (!empty($product['image'])): ?>
             <div id="image-preview-container">
-               <img id="image-preview" src="/baitap3/uploads/products/<?= rawurlencode($product['image']) ?>" style="height:80px; background: #f0f0f0; border: 1px solid #ddd; padding: 2px;">
+               <img id="image-preview" src="/baitap3/uploads/products/<?= rawurlencode($product['image']) ?>?v=<?= time() ?>" style="height:80px; background: #f0f0f0; border: 1px solid #ddd; padding: 2px;">
             </div>
             <?php else: ?>
             <div id="image-preview-container" style="display: none;">
