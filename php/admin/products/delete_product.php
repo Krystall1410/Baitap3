@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../login/config.php';
+require_once __DIR__ . '/../../login/config.php';
 if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /baitap3/php/login/login.php'); exit;
 }

@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Gắn kết quả 
                 $stmt->bind_result($id, $db_username, $hashed_password, $role);
                 if ($stmt->fetch()) {
-                    // Xác thực mật khẩu
+  
                     if (password_verify($password, $hashed_password)) {
                         
                         session_regenerate_id();
@@ -43,26 +43,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         }
 
                        if ($role === 'admin') {
-                           header("Location: admin.php");
                            header("Location: /baitap3/php/login/admin.php");
                             exit;
                         } else {
-                            header("Location: index.html");
-                           header("Location: /baitap3/index.html");
+                            header("Location: /baitap3/view/index.php");
                             exit;
                         }
 
-                    }   
+                    }
                 }
             }
         }
+        // Nếu không có dòng nào được trả về hoặc mật khẩu sai, chuyển hướng với lỗi
+        // Đặt câu lệnh chuyển hướng ở đây để xử lý cả hai trường hợp: sai tên người dùng hoặc sai mật khẩu.
         $stmt->close();
+        $mysqli->close();
+        header("Location: login.php?error=1"); // Lỗi: Tên người dùng hoặc mật khẩu không đúng
+        exit;
     }
     
-    header("Location: login.php?error=1");
-    exit;
-
     $mysqli->close();
 }
 ?>
-

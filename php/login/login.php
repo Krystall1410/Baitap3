@@ -1,24 +1,32 @@
 <?php
 
+define('APP_ROOT', dirname(__DIR__, 2)); 
+
+define('BASE_URL', '/baitap3'); 
+define('BRAND_URL', BASE_URL . '/php/brand');
+define('CATEGORY_URL', BASE_URL . '/php/category');
+define('PRODUCT_URL', BASE_URL . '/php/products');
+ 
 session_start();
+
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-        header('Location: /baitap3/php/login/admin.php');
+        header('Location: ' . BASE_URL . '/php/login/admin.php');
         exit;
     } else {
-        header('Location: /baitap3/shop.html');
+        header('Location: ' . BASE_URL . '/view/shop.php');
         exit;
     }
 }
 
-// Kiểm tra cookie "remember me" và verify từ DB
+
 $saved_username = '';
 
 if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
     $saved_username = $_COOKIE['username'];
 
     // nạp config và kiểm tra
-    require_once "config.php";
+    require_once __DIR__ . "/config.php";
 
     $sql = "SELECT id, username, role FROM users WHERE username = ?";
     if ($stmt = $mysqli->prepare($sql)) {
@@ -35,9 +43,9 @@ if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
                 $_SESSION['role'] = $role;
 
                 if ($role === 'admin') {
-                    header('Location: admin.php');
+                    header('Location: ' . BASE_URL . '/php/login/admin.php');
                 } else {
-                    header('Location: shop.html');
+                    header('Location: ' . BASE_URL . '/view/shop.php');
                 }
                 exit;
             }

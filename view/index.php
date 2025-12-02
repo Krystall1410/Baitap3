@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?php
+session_start();
+require_once __DIR__ . '/../php/login/config.php';
+?><!DOCTYPE html>
 <html lang="vietnamese">
 
 <head>
@@ -7,19 +10,43 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap&subset=vietnamese" rel="stylesheet">
-
-    
-
     
     <title>Nội thất đẹp Raumania|Trang chủ</title>
 
+    
+    <link rel="icon" href="../img/core-img/favicon.ico">
 
     
-    <link rel="icon" href="img/core-img/favicon.ico">
+    <link rel="stylesheet" href="../css/core-style.css">
+    <link rel="stylesheet" href="../style.css">
 
-    
-    <link rel="stylesheet" href="css/core-style.css">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Tùy chỉnh cho menu My Account */
+        .account-nav {
+            font-size: 16px;
+            color: #242424;
+            font-weight: 500;
+            text-transform: uppercase;
+            padding-left: 15px;
+            display: inline-block;
+        }
+        .account-nav:hover, .account-nav:focus {
+            color: #fbb710;
+        }
+        .account-nav img {
+            padding-right: 5px;
+        }
+        .dropdown-menu {
+            border: none;
+            border-radius: 0;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+            margin-top: 10px !important;
+        }
+        .dropdown-item:hover, .dropdown-item:focus {
+            color: #fbb710;
+            background-color: #f8f9fa;
+        }
+    </style>
 
 </head>
 
@@ -34,8 +61,8 @@
                 <div class="col-12">
                     <div class="search-content">
                         <form action="#" method="get">
-                            <input type="search" name="search" id="search" placeholder="Type your keyword...">
-                            <button type="submit"><img src="img/core-img/search.png" alt=""></button>
+                            <input type="search" name="search" id="search" placeholder="Nhập từ khóa...">
+                            <button type="submit"><img src="../img/core-img/search.png" alt=""></button>
                         </form>
                     </div>
                 </div>
@@ -51,7 +78,7 @@
         <div class="mobile-nav">
             
             <div class="amado-navbar-brand">
-                <a href="index.html"><img src="img/core-img/logo.png" alt=""></a>
+                <a href="index.php"><img src="../img/core-img/logo.png" alt=""></a>
             </div>
             
             <div class="amado-navbar-toggler">
@@ -67,31 +94,53 @@
             </div>
             
             <div class="logo">
-                <a href="index.html"><img src="img/core-img/logo.png" alt=""></a>
+                <a href="index.php"><img src="../img/core-img/logo.png" alt=""></a>
             </div>
             
             <nav class="amado-nav">
                 <ul>
-                    <li class="active"><a href="index.html">Trang chủ</a></li>
-                    <li><a href="shop.html">Cửa hàng</a></li>
-                    <li><a href="product-details.html">Chi tiết sản phẩm</a></li>
-                    <li><a href="cart.html">Giỏ hàng</a></li>
-                    <li><a href="checkout.html">Thông tin thanh toán</a></li>
+                    <li class="active"><a href="index.php">Trang chủ</a></li>
+                    <li><a href="shop.php">Cửa hàng</a></li>
+                    <li><a href="product-details.php">Chi tiết sản phẩm</a></li>
+                    <li><a href="cart.php">Giỏ hàng</a></li>
+                    <li><a href="checkout.php">Thông tin thanh toán</a></li>
                 </ul>
             </nav>
             
             <div class="amado-btn-group mt-30 mb-100">
                 <a href="#" class="btn amado-btn mb-15">%Giảm giá%</a>
-                <a href="#" class="btn amado-btn active">Sản phẩm mới</a>
+                <a href="shop.php" class="btn amado-btn active">Sản phẩm mới</a>
             </div>
             
             <div class="cart-fav-search mb-100">
-                <a href="cart.html" class="cart-nav"><img src="img/core-img/cart.png" alt=""> Giỏ hàng <span>(3)</span></a>
-                <a href="#" class="fav-nav"><img src="img/core-img/favorites.png" alt=""> Yêu thích</a>
-                <a href="#" class="search-nav"><img src="img/core-img/search.png" alt=""> Tìm kiếm</a>
-                <a href="php/login/login.php" class="login-nav" style="padding-left: 15px;"> Đăng nhập</a>
-                <a href="php/login/register.php" class="register-nav" style="padding-left: 15px;">Đăng ký</a>
-                <a href="/Baitap3/php/login/logout.php" class="logout-nav" style="padding-left: 15px;">Đăng xuất</a>
+                <a href="cart.php" class="cart-nav"><img src="../img/core-img/cart.png" alt=""> Giỏ hàng <span>(<?php
+                        $cart_count = 0; // Khởi tạo biến đếm
+                        if (isset($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+                            foreach ($_SESSION['cart'] as $item) {
+                                // Cộng dồn số lượng của từng sản phẩm
+                                $cart_count += isset($item['quantity']) ? (int)$item['quantity'] : 0;
+                            }
+                        }
+                        echo $cart_count;
+                    ?>)</span></a>
+                <a href="#" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
+                <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
+                <div class="dropdown" style="display: inline-block;">
+                    <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <img src="../img/core-img/user.png" alt=""> My Account
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <?php if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true): ?>
+                            <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                                <a class="dropdown-item" href="/baitap3/php/login/admin.php">Admin</a>
+                            <?php endif; ?>
+                            <a class="dropdown-item" href="../php/login/logout.php">Đăng xuất</a>
+                        <?php else: ?>
+                            <a class="dropdown-item" href="../php/login/login.php">Đăng nhập</a>
+                            <a class="dropdown-item" href="../php/login/register.php">Đăng ký</a>
+                        <?php endif; ?>
+                    </div>
+                </div>
             </div>
             
             <div class="social-info d-flex justify-content-between">
@@ -107,8 +156,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/ghedon.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/ghedon.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -121,8 +170,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/ban.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/ban.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -133,8 +182,8 @@
                 </div>
 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/denchum.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/denchum.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -147,8 +196,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/sofa.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/sofa.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -161,8 +210,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/bonruamat.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/bonruamat.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -174,8 +223,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/tuphongkhach.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/tuphongkhach.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -187,8 +236,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/guong.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/guong.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -200,8 +249,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/remcua.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/remcua.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -213,8 +262,8 @@
 
                 
                 <div class="single-products-catagory clearfix">
-                    <a href="shop.html">
-                        <img src="img/bg-img/giasach.jpg" alt="">
+                    <a href="shop.php">
+                        <img src="../img/bg-img/giasach.jpg" alt="">
                         
                         <div class="hover-content">
                             <div class="line"></div>
@@ -263,7 +312,7 @@
                     <div class="single_widget_area">
                         
                         <div class="footer-logo mr-50">
-                            <a href="index.html"><img src="img/core-img/logo2.png" alt=""></a>
+                            <a href="index.php"><img src="../img/core-img/logo2.png" alt=""></a>
                         </div>
                         
                         <p class="copywrite">
@@ -281,19 +330,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                                 <div class="collapse navbar-collapse" id="footerNavContent">
                                     <ul class="navbar-nav ml-auto">
                                         <li class="nav-item active">
-                                            <a class="nav-link" href="index.html">Trang chủ</a>
+                                            <a class="nav-link" href="index.php">Trang chủ</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="shop.html">Cửa hàng</a>
+                                            <a class="nav-link" href="shop.php">Cửa hàng</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="product-details.html">Chi tiết sản phẩm</a>
+                                            <a class="nav-link" href="product-details.php">Chi tiết sản phẩm</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="cart.html">Giỏ hàng</a>
+                                            <a class="nav-link" href="cart.php">Giỏ hàng</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="checkout.html">Thông tin thanh toán</a>
+                                            <a class="nav-link" href="checkout.php">Thông tin thanh toán</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -307,15 +356,15 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     
 
     
-    <script src="js/jquery/jquery-2.2.4.min.js"></script>
+    <script src="../js/jquery/jquery-2.2.4.min.js"></script>
     
-    <script src="js/popper.min.js"></script>
+    <script src="../js/popper.min.js"></script>
     
-    <script src="js/bootstrap.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
     
-    <script src="js/plugins.js"></script>
+    <script src="../js/plugins.js"></script>
     
-    <script src="js/active.js"></script>
+    <script src="../js/active.js"></script>
 
 </body>
 

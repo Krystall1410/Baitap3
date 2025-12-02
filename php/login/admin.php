@@ -12,10 +12,22 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
 
 if ($page == 'process_product') {
-   include('../admin/process_product.php');
+   include('../admin/products/process_product.php');
 
 } else if ($page == 'delete_product') {
-   include('../admin/delete_product.php');
+   include('../admin/products/delete_product.php');
+
+} else if ($page == 'process_brand') {
+   include('../admin/brand/process_brand.php');
+
+} else if ($page == 'delete_brand') {
+   include('../admin/brand/delete_brand.php');
+
+} else if ($page == 'process_category') {
+   include('../admin/category/process_category.php');
+
+} else if ($page == 'delete_category') {
+   include('../admin/category/delete_category.php');
 
 }
 
@@ -86,13 +98,15 @@ if ($page == 'process_product') {
                   </div>
                </div>
                <div class="sidebar_blog_2">
-                  <h4>Khu vực</h4></h4>
+                  <h4>Khu vực quản lí</h4></h4>
                   <ul class="list-unstyled components">
                      <li class="active">
                         <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Danh Mục</span></a>
                         <ul class="collapse list-unstyled" id="dashboard">
                            <li><a href="admin.php?page=products">Sản phẩm — Danh sách</a></li>                           
-                           
+                           <li><a href="admin.php?page=brands">Thương hiệu — Danh sách</a></li>
+                           <li><a href="admin.php?page=categories">Danh mục — Danh sách</a></li>
+
                         </ul>
                      </li>
                </div>
@@ -115,7 +129,7 @@ if ($page == 'process_product') {
                                     <a class="dropdown-toggle" data-toggle="dropdown"><span class="name_user">Admin</span></a>
                                     <div class="dropdown-menu dropdown-menu-right">
                                        <a class="dropdown-item" href="/baitap3/php/login/logout.php">Đăng xuất</a>
-                                       <a class="dropdown-item" href="/baitap3/php/home/back_home.php">Trang chủ</a>
+                                       <a class="dropdown-item" href="/baitap3/view/index.php">Trang chủ</a>
                                       
                                     </div>
                                  </li>
@@ -132,10 +146,18 @@ if ($page == 'process_product') {
                         // --- THAY ĐỔI ---
                         // Dựa vào giá trị của 'page' để include file tương ứng
                         if ($page == 'products') {
-                           include('../admin/products.php');
+                           include('../admin/products/products.php');
                         } else if ($page == 'product_form') {
                            // Trang thêm/sửa sản phẩm
-                           include('../admin/product_form.php');
+                           include('../admin/products/product_form.php');
+                        } else if ($page == 'brands') {
+                           include('../admin/brand/brands.php');
+                        } else if ($page == 'brand_form') {
+                           include('../admin/brand/brand_form.php');
+                        } else if ($page == 'category_form') {
+                           include('../admin/category/category_form.php');
+                        } else if ($page == 'categories') {
+                           include('../admin/category/categories.php');
                         }
                         // Bạn có thể thêm các trường hợp khác ở đây với else if
                      ?>
