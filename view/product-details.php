@@ -1,6 +1,54 @@
 <?php
 session_start();
 require_once __DIR__ . '/../php/login/config.php';
+$product = null;
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
+    $product_id_to_add = intval($_POST['addtocart']);
+    $quantity_to_add = isset($_POST['quantity']) ? intval($_POST['quantity']) : 1;
+
+    if ($product_id_to_add > 0 && $quantity_to_add > 0) {
+
+        if (!isset($_SESSION['cart'])) {
+            $_SESSION['cart'] = [];
+        }
+
+
+        $product_exists = false;
+        foreach ($_SESSION['cart'] as &$item) {
+            if ($item['id'] == $product_id_to_add) {
+                $item['quantity'] += $quantity_to_add; 
+                $product_exists = true;
+                break;
+            }
+        }
+        unset($item);
+
+
+        if (!$product_exists) {
+            $_SESSION['cart'][] = ['id' => $product_id_to_add, 'quantity' => $quantity_to_add];
+        }
+    }
+}
+if (isset($_GET['id']) && !empty($_GET['id'])) {
+    $product_id = intval($_GET['id']);
+
+    $sql = "SELECT * FROM products WHERE id = ?";
+    if ($stmt = $mysqli->prepare($sql)) {
+        $stmt->bind_param("i", $product_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $product = $result->fetch_assoc();
+        }
+        $stmt->close();
+    }
+}
+
+
+
 ?><!DOCTYPE html>
 <html lang="en">
 
@@ -59,7 +107,7 @@ require_once __DIR__ . '/../php/login/config.php';
             <div class="row">
                 <div class="col-12">
                     <div class="search-content">
-                        <form action="#" method="get">
+                        <form action="shop.php" method="get">
                             <input type="search" name="search" id="search" placeholder="Nhập từ khóa...">
                             <button type="submit"><img src="../img/core-img/search.png" alt=""></button>
                         </form>
@@ -100,16 +148,16 @@ require_once __DIR__ . '/../php/login/config.php';
                 <ul>
                     <li><a href="index.php">Trang chủ</a></li>
                     <li><a href="shop.php">Cửa hàng</a></li>
-                    <li class="active"><a href="product-details.php">Chi tiết sản phẩm</a></li>
-                    <li><a href="cart.php">Giỏ hàng</a></li>
+                    
+                
                     <li><a href="checkout.php">Thông tin thanh toán</a></li>
                 </ul>
             </nav>
             
-            <div class="amado-btn-group mt-30 mb-100">
+            <!-- <div class="amado-btn-group mt-30 mb-100">
                 <a href="#" class="btn amado-btn mb-15">%Giảm giá%</a>
                 <a href="shop.php" class="btn amado-btn active">Sản phẩm mới</a>
-            </div>
+            </div> -->
             
             <div class="cart-fav-search mb-100">
                 <a href="cart.php" class="cart-nav"><img src="../img/core-img/cart.png" alt=""> Giỏ hàng <span>(<?php
@@ -122,7 +170,7 @@ require_once __DIR__ . '/../php/login/config.php';
                         }
                         echo $cart_count;
                     ?>)</span></a>
-                <a href="#" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
+                
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -152,6 +200,17 @@ require_once __DIR__ . '/../php/login/config.php';
         
 
         
+        <?php if (!$product): ?>
+        <div class="single-product-area section-padding-100 clearfix">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="text-center"><h2>Vui lòng chọn một sản phẩm để xem chi tiết.</h2><p><a href="shop.php" class="btn amado-btn mt-30">Đi đến cửa hàng</a></p></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php else: ?>
         <div class="single-product-area section-padding-100 clearfix">
             <div class="container-fluid">
 
@@ -160,9 +219,8 @@ require_once __DIR__ . '/../php/login/config.php';
                         <nav aria-label="breadcrumb">
                             <ol class="breadcrumb mt-50">
                                 <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
-                                <li class="breadcrumb-item"><a href="#">Bàn/ghế gaming</a></li>
-                                <li class="breadcrumb-item"><a href="#">Ghế gaming</a></li>
-                                <li class="breadcrumb-item active" aria-current="page">Ghế gaming Extreme Zero</li>
+                                <li class="breadcrumb-item"><a href="shop.php">Cửa hàng</a></li>
+                                <li class="breadcrumb-item active" aria-current="page"><?php echo htmlspecialchars($product['name']); ?></li>
                             </ol>
                         </nav>
                     </div>
@@ -173,34 +231,12 @@ require_once __DIR__ . '/../php/login/config.php';
                         <div class="single_product_thumb">
                             <div id="product_details_slider" class="carousel slide" data-ride="carousel">
                                 <ol class="carousel-indicators">
-                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url(../img/product-img/ghegaming1.jpg);">
-                                    </li>
-                                    <li data-target="#product_details_slider" data-slide-to="1" style="background-image: url(../img/product-img/ghegaming2.jpg);">
-                                    </li>
-                                    <li data-target="#product_details_slider" data-slide-to="2" style="background-image: url(../img/product-img/ghegaming3.jpg);">
-                                    </li>
-                                    <li data-target="#product_details_slider" data-slide-to="3" style="background-image: url(../img/product-img/ghegaming4.jpg);">
-                                    </li>
+                                    <li class="active" data-target="#product_details_slider" data-slide-to="0" style="background-image: url('/baitap3/uploads/products/<?php echo htmlspecialchars($product['image']); ?>');"></li>
                                 </ol>
                                 <div class="carousel-inner">
                                     <div class="carousel-item active">
-                                        <a class="gallery_img" href="../img/product-img/ghegaming1.jpg">
-                                            <img class="d-block w-100" src="../img/product-img/ghegaming1.jpg" alt="First slide">
-                                        </a>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="../img/product-img/ghegaming2.jpg">
-                                            <img class="d-block w-100" src="../img/product-img/ghegaming2.jpg" alt="Second slide">
-                                        </a>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="../img/product-img/ghegaming3.jpg">
-                                            <img class="d-block w-100" src="../img/product-img/ghegaming3.jpg" alt="Third slide">
-                                        </a>
-                                    </div>
-                                    <div class="carousel-item">
-                                        <a class="gallery_img" href="../img/product-img/ghegaming4.jpg">
-                                            <img class="d-block w-100" src="../img/product-img/ghegaming4.jpg" alt="Fourth slide">
+                                        <a class="gallery_img" href="/baitap3/uploads/products/<?php echo htmlspecialchars($product['image']); ?>">
+                                            <img class="d-block w-100" src="/baitap3/uploads/products/<?php echo htmlspecialchars($product['image']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                                         </a>
                                     </div>
                                 </div>
@@ -212,9 +248,9 @@ require_once __DIR__ . '/../php/login/config.php';
                             
                             <div class="product-meta-data">
                                 <div class="line"></div>
-                                <p class="product-price">1.599.000vnd</p>
+                                <p class="product-price"><?php echo number_format($product['price'], 0, ',', '.'); ?>vnd</p>
                                 <a href="product-details.php">
-                                    <h6>Ghế gaming Extreme Zero S+ V1</h6>
+                                    <h6><?php echo htmlspecialchars($product['name']); ?></h6>
                                 </a>
                                 
                                 <div class="ratings-review mb-15 d-flex align-items-center justify-content-between">
@@ -234,11 +270,11 @@ require_once __DIR__ . '/../php/login/config.php';
                             </div>
                             
                             <div class="short_overview my-5">
-                                <p>Đệm ghế bằng mút xốp Foam nguyên khối bọc da PU. Cơ chế ngả 150 độ, xoay 360 độ. Tay cố định bọc da mềm mại. Ghế sử dụng bộ pistong Thủy lực và trục đồng bộ cao cấp. Chân ghế lõi hợp kim bọc nhựa cao cấp chịu lực lớn. Bánh xe kép tạo cảm giác êm ái khi di chuyển. Có tựa lưng và gối đầu. Bảo hành: 12 tháng</p>
+                                <p><?php echo htmlspecialchars($product['description']); ?></p>
                             </div>
                             <!-- Add to Cart Form -->
 
-                            <form class="cart clearfix" method="post">
+                            <form class="cart clearfix" action="product-details.php?id=<?php echo $product['id']; ?>" method="post">
                                 <div class="cart-btn d-flex mb-50">
                                     <p>Số lượng</p>
                                     <div class="quantity">
@@ -247,7 +283,7 @@ require_once __DIR__ . '/../php/login/config.php';
                                         <span class="qty-plus" onclick="var effect = document.getElementById('qty'); var qty = effect.value; if( !isNaN( qty )) effect.value++;return false;"><i class="fa fa-caret-up" aria-hidden="true"></i></span>
                                     </div>
                                 </div>
-                                <button type="submit" name="addtocart" value="5" class="btn amado-btn">Thêm vào giỏ</button>
+                                <button type="submit" name="addtocart" value="<?php echo $product['id']; ?>" class="btn amado-btn">Thêm vào giỏ</button>
                             </form>
 
                         </div>
@@ -255,6 +291,7 @@ require_once __DIR__ . '/../php/login/config.php';
                 </div>
             </div>
         </div>
+        <?php endif; ?>
         
     </div>
     

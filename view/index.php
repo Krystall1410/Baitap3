@@ -60,7 +60,7 @@ require_once __DIR__ . '/../php/login/config.php';
             <div class="row">
                 <div class="col-12">
                     <div class="search-content">
-                        <form action="#" method="get">
+                        <form action="shop.php" method="get">
                             <input type="search" name="search" id="search" placeholder="Nhập từ khóa...">
                             <button type="submit"><img src="../img/core-img/search.png" alt=""></button>
                         </form>
@@ -101,16 +101,16 @@ require_once __DIR__ . '/../php/login/config.php';
                 <ul>
                     <li class="active"><a href="index.php">Trang chủ</a></li>
                     <li><a href="shop.php">Cửa hàng</a></li>
-                    <li><a href="product-details.php">Chi tiết sản phẩm</a></li>
-                    <li><a href="cart.php">Giỏ hàng</a></li>
+                    
+                 
                     <li><a href="checkout.php">Thông tin thanh toán</a></li>
                 </ul>
             </nav>
             
-            <div class="amado-btn-group mt-30 mb-100">
+            <!-- <div class="amado-btn-group mt-30 mb-100">
                 <a href="#" class="btn amado-btn mb-15">%Giảm giá%</a>
                 <a href="shop.php" class="btn amado-btn active">Sản phẩm mới</a>
-            </div>
+            </div> -->
             
             <div class="cart-fav-search mb-100">
                 <a href="cart.php" class="cart-nav"><img src="../img/core-img/cart.png" alt=""> Giỏ hàng <span>(<?php
@@ -123,7 +123,7 @@ require_once __DIR__ . '/../php/login/config.php';
                         }
                         echo $cart_count;
                     ?>)</span></a>
-                <a href="#" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
+            
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

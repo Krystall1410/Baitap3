@@ -23,7 +23,7 @@ if (isset($_GET['add_to_cart'])) {
             'id' => $product['id'],
             'name' => $product['name'],
             'price' => $product['price'],
-            'image' => '../uploads/products/' . $product['image'],
+            'image' => '/baitap3/uploads/products/' . $product['image'],
             'quantity' => 1
         ];
     }
@@ -36,7 +36,17 @@ $category_slug = $_GET['category'] ?? null;
 $brand_id = $_GET['brand'] ?? null;
 $min_price = isset($_GET['min_price']) ? (float)$_GET['min_price'] : null;
 $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
+$search_term = isset($_GET['search']) ? trim($_GET['search']) : null;
 ?><!DOCTYPE html>
+<?php
+// Pagination settings
+$products_per_page = 6;
+$current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($current_page < 1) {
+    $current_page = 1;
+}
+$offset = ($current_page - 1) * $products_per_page;
+?>
 <html lang="vietnamese">
 
 <head>
@@ -110,7 +120,7 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
             <div class="row">
                 <div class="col-12">
                     <div class="search-content">
-                        <form action="#" method="get">
+                        <form action="shop.php" method="get">
                             <input type="search" name="search" id="search" placeholder="Nhập từ khóa...">
                             <button type="submit"><img src="../img/core-img/search.png" alt=""></button>
                         </form>
@@ -147,16 +157,16 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
                 <ul>
                     <li><a href="../index.php">Trang chủ</a></li>
                     <li class="active"><a href="shop.php">Cửa hàng</a></li>
-                    <li><a href="product-details.php">Chi tiết sản phẩm</a></li>
-                    <li><a href="cart.php">Giỏ hàng </a></li>
+                    
+                   
                     <li><a href="checkout.php">Thông tin thanh toán</a></li>
                 </ul>
             </nav>
             
-            <div class="amado-btn-group mt-30 mb-100">
+            <!-- <div class="amado-btn-group mt-30 mb-100">
                 <a href="#" class="btn amado-btn mb-15">%Giảm giá%</a>
                 <a href="#" class="btn amado-btn active">Sản phẩm mới</a>
-            </div>
+            </div> -->
             
             <div class="cart-fav-search mb-100">
                 <a href="cart.php" class="cart-nav">
@@ -171,7 +181,7 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
                         echo $cart_count;
                     ?>)</span>
                 </a>
-                <a href="#" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
+                
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -244,23 +254,6 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
             </div>
 
             
-            <div class="widget color mb-50">
-                
-                <h6 class="widget-title mb-30">Màu Sắc</h6>
-
-                <div class="widget-desc">
-                    <ul class="d-flex">
-                        <li><a href="#" class="color1"></a></li>
-                        <li><a href="#" class="color2"></a></li>
-                        <li><a href="#" class="color3"></a></li>
-                        <li><a href="#" class="color4"></a></li>
-                        <li><a href="#" class="color5"></a></li>
-                        <li><a href="#" class="color6"></a></li>
-                        <li><a href="#" class="color7"></a></li>
-                        <li><a href="#" class="color8"></a></li>
-                    </ul>
-                </div>
-            </div>
 
             
             <div class="widget price mb-50">
@@ -282,85 +275,105 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
 
         <div class="amado_product_area section-padding-100">
             <div class="container-fluid">
+                <?php
+                    // --- LOGIC TRUY VẤN SẢN PHẨM (ĐÃ DI CHUYỂN LÊN TRÊN) ---
+                    $sql = "SELECT p.id, p.name, p.price, p.image FROM products p";
+                    $where = [];
+                    $params = [];
+                    $types = '';
+
+                    if ($search_term) {
+                        $where[] = "p.name LIKE ?";
+                        $params[] = "%" . $search_term . "%";
+                        $types .= 's';
+                    }
+
+                    if ($category_slug) {
+                        $sql_join_cat = " JOIN categories c ON p.category_id = c.id";
+                        $where[] = "c.slug = ?";
+                        $params[] = $category_slug;
+                        $types .= 's';
+                    }
+                    if ($brand_id) {
+                        $where[] = "p.brand_id = ?";
+                        $params[] = $brand_id;
+                        $types .= 'i';
+                    }
+                    if ($min_price !== null) {
+                        $where[] = "p.price >= ?";
+                        $params[] = $min_price;
+                        $types .= 'd';
+                    }
+                    if ($max_price !== null) {
+                        $where[] = "p.price <= ?";
+                        $params[] = $max_price;
+                        $types .= 'd';
+                    }
+
+                    // Get total products for pagination
+                    $count_sql = "SELECT COUNT(p.id) FROM products p";
+                    if (isset($sql_join_cat)) $count_sql .= $sql_join_cat;
+                    if (!empty($where)) $count_sql .= " WHERE " . implode(" AND ", $where);
+
+                    $count_stmt = $mysqli->prepare($count_sql);
+                    if (!empty($params)) $count_stmt->bind_param($types, ...$params);
+                    $count_stmt->execute();
+                    $total_products = $count_stmt->get_result()->fetch_row()[0];
+                    $count_stmt->close();
+
+                    $total_pages = ceil($total_products / $products_per_page);
+
+                    if ($current_page > $total_pages && $total_pages > 0) {
+                        $current_page = $total_pages;
+                        $offset = ($current_page - 1) * $products_per_page;
+                    }
+
+                    if (isset($sql_join_cat)) $sql .= $sql_join_cat;
+                    if (!empty($where)) $sql .= " WHERE " . implode(" AND ", $where);
+                    $sql .= " ORDER BY p.id DESC LIMIT ? OFFSET ?";
+                    $types .= 'ii';
+                    $params[] = $products_per_page;
+                    $params[] = $offset;
+
+                    $stmt = $mysqli->prepare($sql);
+                    if (!empty($params)) $stmt->bind_param($types, ...$params);
+                    $stmt->execute();
+                    $result = $stmt->get_result();
+                ?>
 
                 <div class="row">
                     <div class="col-12">
                         <div class="product-topbar d-xl-flex align-items-end justify-content-between">
-                            
+                            <!-- Hiển thị số lượng sản phẩm -->
                             <div class="total-products">
-                                <p>1–8 / 25 sản phẩm</p>
-                                <div class="view d-flex">
-                                    <a href="#"><i class="fa fa-th-large" aria-hidden="true"></i></a>
-                                    <a href="#"><i class="fa fa-bars" aria-hidden="true"></i></a>
-                                </div>
+                                <?php
+                                    $start_product = $offset + 1;
+                                    $end_product = $offset + $result->num_rows;
+                                    if ($total_products > 0) {
+                                        echo "<p>Hiển thị {$start_product}–{$end_product} trên tổng số {$total_products} sản phẩm</p>";
+                                    } else {
+                                        echo "<p>Không có sản phẩm nào</p>";
+                                    }
+                                ?>
                             </div>
-                            
+                            <!-- Bộ lọc -->
                             <div class="product-sorting d-flex">
                                 <div class="sort-by-date d-flex align-items-center mr-15">
                                     <p>Bộ Lọc</p>
                                     <form action="#" method="get">
                                         <select name="select" id="sortBydate">
-                                            <option value="value">Ngày</option>
                                             <option value="value">Mới nhất</option>
-                                            <option value="value">Nổi bật</option>
-                                        </select>
-                                    </form>
-                                </div>
-                                <div class="view-product d-flex align-items-center">
-                                    <p>Hiển thị / trang</p>
-                                    <form action="#" method="get">
-                                        <select name="select" id="viewProduct">
-                                            <option value="value">6</option>
-                                            <option value="value">8</option>
-                                            <option value="value">12</option>
-                                            <option value="value">24</option>
                                         </select>
                                     </form>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>  
 
                 <div class="row">
                     <?php
-                        $sql = "SELECT p.id, p.name, p.price, p.image FROM products p";
-                        $where = [];
-                        $params = [];
-                        $types = '';
-
-                        if ($category_slug) {
-                            $sql .= " JOIN categories c ON p.category_id = c.id";
-                            $where[] = "c.slug = ?";
-                            $params[] = $category_slug;
-                            $types .= 's';
-                        }
-                        if ($brand_id) {
-                            $where[] = "p.brand_id = ?";
-                            $params[] = $brand_id;
-                            $types .= 'i';
-                        }
-                        if ($min_price !== null) {
-                            $where[] = "p.price >= ?";
-                            $params[] = $min_price;
-                            $types .= 'd';
-                        }
-                        if ($max_price !== null) {
-                            $where[] = "p.price <= ?";
-                            $params[] = $max_price;
-                            $types .= 'd';
-                        }
-
-                        if (!empty($where)) {
-                            $sql .= " WHERE " . implode(" AND ", $where);
-                        }
-                        $sql .= " ORDER BY p.id DESC";
-
-                        $stmt = $mysqli->prepare($sql);
-                        if (!empty($params)) $stmt->bind_param($types, ...$params);
-                        $stmt->execute();
-                        $result = $stmt->get_result();
-
+                        // --- VÒNG LẶP HIỂN THỊ SẢN PHẨM (LOGIC ĐÃ CHUYỂN LÊN TRÊN) ---
                         if ($result && $result->num_rows > 0) { 
                             while($row = mysqli_fetch_assoc($result)) {
                     ?>
@@ -368,7 +381,7 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
                         <div class="single-product-wrapper">
             
                             <div class="product-img">
-                                <img src="../uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
+                                <img src="/baitap3/uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
                                 
                                 <img class="hover-img" src="img/core-img/logo.png" alt="">
                             </div>
@@ -400,7 +413,7 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
                     </div>
                     <?php
                             }
-                        } else {
+                        } elseif (!$search_term && !$category_slug && !$brand_id && $min_price === null && $max_price === null) {
                             echo "<p>Không có sản phẩm nào để hiển thị.</p>";
                         }
                         $stmt->close();
@@ -411,11 +424,26 @@ $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
                     <div class="col-12">
                         
                         <nav aria-label="navigation">
-                            <ul class="pagination justify-content-end mt-50">
-                                <li class="page-item active"><a class="page-link" href="#">01</a></li>
-                                <li class="page-item"><a class="page-link" href="#">02</a></li>
-                                <li class="page-item"><a class="page-link" href="#">03</a></li>
-                                <li class="page-item"><a class="page-link" href="#">04</a></li>
+                            <ul class="pagination justify-content-end mt-50"> 
+                                <?php if ($total_pages > 1): ?>
+                                    <?php
+                                        $query_params = $_GET;
+                                        unset($query_params['page']); // Xóa tham số 'page' hiện tại để không bị trùng lặp
+                                        $base_query = http_build_query($query_params);
+                                        $base_url = '?' . ($base_query ? $base_query . '&' : '');
+                                    ?>
+                                    <?php if ($current_page > 1): ?>
+                                        <li class="page-item"><a class="page-link" href="<?= $base_url ?>page=<?= $current_page - 1 ?>"><i class="fa fa-angle-left"></i></a></li>
+                                    <?php endif; ?>
+
+                                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                                        <li class="page-item <?= ($i == $current_page) ? 'active' : '' ?>"><a class="page-link" href="<?= $base_url ?>page=<?= $i ?>"><?= str_pad($i, 2, '0', STR_PAD_LEFT) ?></a></li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($current_page < $total_pages): ?>
+                                        <li class="page-item"><a class="page-link" href="<?= $base_url ?>page=<?= $current_page + 1 ?>"><i class="fa fa-angle-right"></i></a></li>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </ul>
                         </nav>
                     </div>

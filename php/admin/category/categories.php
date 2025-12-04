@@ -18,7 +18,7 @@ $stt = 1;
          <h2>Danh sách danh mục</h2>
       </div>
       <div class="ml-auto">
-         <a href="admin.php?page=category_form" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Thêm mới</a>
+         <a href="/baitap3/php/login/admin.php?page=category_form" class="btn btn-sm btn-primary"><i class="fa fa-plus"></i> Thêm mới</a>
       </div>
    </div>
    <div class="table_section padding_infor_info">

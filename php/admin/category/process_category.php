@@ -3,7 +3,7 @@
 define('APP_ROOT', dirname(__DIR__, 3)); 
 define('BASE_URL', '/baitap3');
 
-require_once APP_ROOT . '/php/config.php';
+require_once __DIR__ . '/../../login/config.php';
 
 if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: ' . BASE_URL . '/php/login/login.php');
@@ -48,7 +48,7 @@ $res_check = $stmt_check->get_result();
 if ($res_check->num_rows > 0) {
     $_SESSION['form_error'] = "Lỗi: Tên danh mục này đã tồn tại (tạo ra slug '{$slug}' bị trùng). Vui lòng chọn tên khác.";
     $_SESSION['form_data'] = ['name' => $name];
-    header('Location: ' . BASE_URL . '/php/admin.php?page=category_form' . ($id ? '&id='.$id : ''));
+    header('Location: ' . BASE_URL . '/php/login/admin.php?page=categories' . ($id ? '&id='.$id : ''));
     exit;
 }
 
