@@ -7,14 +7,14 @@ if (isset($_GET['add_to_cart'])) {
     $product_id = (int)$_GET['add_to_cart'];
 
  
-    $stmt = $mysqli->prepare("SELECT id, name, price, image, stock FROM products WHERE id = ?");
+    $stmt = $mysqli->prepare("SELECT id, name, price, image, stock, is_active FROM products WHERE id = ?");
     $stmt->bind_param("i", $product_id);
     $stmt->execute();
     $result = $stmt->get_result();
     $product = $result->fetch_assoc();
     $stmt->close();
 
-    if ($product) {
+    if ($product && (int)$product['is_active'] === 1) {
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
         }
@@ -298,7 +298,7 @@ $offset = ($current_page - 1) * $products_per_page;
                 <?php
                     // --- LOGIC TRUY VẤN SẢN PHẨM (ĐÃ DI CHUYỂN LÊN TRÊN) ---
                     $sql = "SELECT p.id, p.name, p.price, p.image FROM products p";
-                    $where = [];
+                    $where = ['p.is_active = 1'];
                     $params = [];
                     $types = '';
 

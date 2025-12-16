@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
 
 
         // Lấy thông tin sản phẩm từ DB để lưu đầy đủ vào session (name, price, image)
-        $stmt = $mysqli->prepare("SELECT id, name, price, image, stock FROM products WHERE id = ?");
+        $stmt = $mysqli->prepare("SELECT id, name, price, image, stock FROM products WHERE id = ? AND is_active = 1");
         $stmt->bind_param("i", $product_id_to_add);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -56,7 +56,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $product_id = intval($_GET['id']);
 
-    $sql = "SELECT * FROM products WHERE id = ?";
+    $sql = "SELECT * FROM products WHERE id = ? AND is_active = 1";
     if ($stmt = $mysqli->prepare($sql)) {
         $stmt->bind_param("i", $product_id);
         $stmt->execute();

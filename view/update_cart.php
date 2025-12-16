@@ -31,7 +31,7 @@ if (!isset($_SESSION['cart'][$productId])) {
 
 require_once __DIR__ . '/../php/login/config.php';
 
-$stmt = $mysqli->prepare('SELECT price, stock FROM products WHERE id = ? LIMIT 1');
+$stmt = $mysqli->prepare('SELECT price, stock, is_active FROM products WHERE id = ? LIMIT 1');
 if (!$stmt) {
 	echo json_encode([
 		'success' => false,
@@ -50,6 +50,25 @@ if (!$product) {
 	echo json_encode([
 		'success' => false,
 		'message' => 'Không tìm thấy sản phẩm.'
+	]);
+	exit;
+}
+
+if ((int)($product['is_active'] ?? 0) !== 1) {
+	unset($_SESSION['cart'][$productId]);
+	$subtotal = 0;
+	foreach ($_SESSION['cart'] as $item) {
+		$itemPrice = isset($item['price']) ? (float)$item['price'] : 0;
+		$itemQty = isset($item['quantity']) ? (int)$item['quantity'] : 0;
+		$subtotal += $itemPrice * $itemQty;
+	}
+
+	echo json_encode([
+		'success' => true,
+		'removed' => true,
+		'message' => 'Sản phẩm đã bị ẩn khỏi cửa hàng.',
+		'subtotal' => $subtotal,
+		'total' => $subtotal
 	]);
 	exit;
 }

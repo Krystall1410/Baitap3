@@ -1,6 +1,63 @@
 <?php
 session_start();
 require_once __DIR__ . '/../php/login/config.php';
+
+$cart_items = isset($_SESSION['cart']) && is_array($_SESSION['cart']) ? $_SESSION['cart'] : [];
+$cart_notice = '';
+
+if (!empty($cart_items)) {
+    $productIds = array_keys($cart_items);
+    $productIds = array_values(array_filter(array_map('intval', $productIds), static function ($id) {
+        return $id > 0;
+    }));
+
+    if (!empty($productIds)) {
+        $placeholders = implode(',', array_fill(0, count($productIds), '?'));
+        $types = str_repeat('i', count($productIds));
+        $stmt = $mysqli->prepare("SELECT id, price, stock, is_active FROM products WHERE id IN ($placeholders)");
+
+        if ($stmt instanceof mysqli_stmt) {
+            $stmt->bind_param($types, ...$productIds);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $productMap = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $productMap[(int)$row['id']] = $row;
+            }
+
+            $stmt->close();
+
+            $filteredCart = [];
+            $removedCount = 0;
+
+            foreach ($cart_items as $id => $item) {
+                $intId = (int)$id;
+                if (!isset($productMap[$intId])) {
+                    $removedCount++;
+                    continue;
+                }
+
+                $productRow = $productMap[$intId];
+                if ((int)$productRow['is_active'] !== 1) {
+                    $removedCount++;
+                    continue;
+                }
+
+                $item['price'] = isset($productRow['price']) ? (float)$productRow['price'] : ($item['price'] ?? 0);
+                $item['stock'] = array_key_exists('stock', $productRow) ? ($productRow['stock'] !== null ? (int)$productRow['stock'] : null) : ($item['stock'] ?? null);
+                $filteredCart[$intId] = $item;
+            }
+
+            if ($removedCount > 0) {
+                $cart_notice = 'Một số sản phẩm đã bị gỡ khỏi giỏ hàng vì hiện không còn hiển thị.';
+            }
+
+            $_SESSION['cart'] = $filteredCart;
+            $cart_items = $filteredCart;
+        }
+    }
+}
 ?><!DOCTYPE html>
 <html lang="en">
 
@@ -207,6 +264,11 @@ require_once __DIR__ . '/../php/login/config.php';
                             </form>
                             <?php endif; ?>
                         </div>
+                        <?php if ($cart_notice !== ''): ?>
+                        <div class="alert alert-warning" role="alert">
+                            <?php echo htmlspecialchars($cart_notice, ENT_QUOTES, 'UTF-8'); ?>
+                        </div>
+                        <?php endif; ?>
 
                         <div class="cart-table clearfix">
                             <table class="table table-responsive">
@@ -220,7 +282,6 @@ require_once __DIR__ . '/../php/login/config.php';
                                 </thead>
                                 <tbody>
                                     <?php
-                                        $cart_items = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
                                         $subtotal = 0;
                                         $shipping_fee = 0; 
 

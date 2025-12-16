@@ -69,5 +69,5 @@ if ($stmt) {
     unset($_SESSION['form_error']);
 }
 
-header('Location: ' . BASE_URL . '/php/admin.php?page=categories');
+header('Location: ' . BASE_URL . '/php/login/admin.php?page=categories');
 exit;

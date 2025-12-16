@@ -38,14 +38,67 @@ function renderProvinceOptions(array $options, ?string $selected): string
 }
 
 
-$subtotal = 0;
-if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-    foreach ($_SESSION['cart'] as $item) {
-  
-        $price = isset($item['price']) ? floatval($item['price']) : 0;
-        $quantity = isset($item['quantity']) ? intval($item['quantity']) : 0;
-        $subtotal += $price * $quantity;
+$cartItems = isset($_SESSION['cart']) && is_array($_SESSION['cart']) ? $_SESSION['cart'] : [];
+$checkoutNotice = '';
+
+if (!empty($cartItems)) {
+    $ids = array_values(array_filter(array_map('intval', array_keys($cartItems)), static function ($id) {
+        return $id > 0;
+    }));
+
+    if (!empty($ids)) {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $types = str_repeat('i', count($ids));
+        $stmt = $mysqli->prepare("SELECT id, price, stock, is_active FROM products WHERE id IN ($placeholders)");
+
+        if ($stmt instanceof mysqli_stmt) {
+            $stmt->bind_param($types, ...$ids);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $productData = [];
+
+            while ($row = $result->fetch_assoc()) {
+                $productData[(int)$row['id']] = $row;
+            }
+
+            $stmt->close();
+
+            $validItems = [];
+            $removed = 0;
+
+            foreach ($cartItems as $rawId => $cartItem) {
+                $intId = (int)$rawId;
+                if (!isset($productData[$intId])) {
+                    $removed++;
+                    continue;
+                }
+
+                $prodRow = $productData[$intId];
+                if ((int)$prodRow['is_active'] !== 1) {
+                    $removed++;
+                    continue;
+                }
+
+                $cartItem['price'] = isset($prodRow['price']) ? (float)$prodRow['price'] : ($cartItem['price'] ?? 0);
+                $cartItem['stock'] = array_key_exists('stock', $prodRow) ? ($prodRow['stock'] !== null ? (int)$prodRow['stock'] : null) : ($cartItem['stock'] ?? null);
+                $validItems[$intId] = $cartItem;
+            }
+
+            if ($removed > 0) {
+                $checkoutNotice = 'Một số sản phẩm đã bị loại khỏi đơn hàng vì hiện không còn hiển thị.';
+            }
+
+            $_SESSION['cart'] = $validItems;
+            $cartItems = $validItems;
+        }
     }
+}
+
+$subtotal = 0;
+foreach ($cartItems as $item) {
+    $price = isset($item['price']) ? (float)$item['price'] : 0;
+    $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 0;
+    $subtotal += $price * $quantity;
 }
 ?><!DOCTYPE html>
 <html lang="en">
@@ -211,6 +264,12 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                             <?php if (!empty($checkoutError)): ?>
                                 <div class="alert alert-danger" role="alert">
                                     <?= htmlspecialchars($checkoutError) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if ($checkoutNotice !== ''): ?>
+                                <div class="alert alert-warning" role="alert">
+                                    <?= htmlspecialchars($checkoutNotice) ?>
                                 </div>
                             <?php endif; ?>
 
