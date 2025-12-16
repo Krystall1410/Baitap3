@@ -229,25 +229,32 @@ require_once __DIR__ . '/../php/login/config.php';
                                         </tr>
                                     <?php else: ?>
                                         <?php foreach ($cart_items as $index => $item): 
-                                            $item_total = $item['price'] * $item['quantity'];
+                                            // Bảo vệ: đảm bảo các key tồn tại, gán mặc định nếu không
+                                            $price = isset($item['price']) ? (float)$item['price'] : 0.0;
+                                            $quantity = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+                                            $name = isset($item['name']) ? $item['name'] : 'Sản phẩm';
+                                            $image = isset($item['image']) ? $item['image'] : '';
+                                            $id = isset($item['id']) ? $item['id'] : '';
+
+                                            $item_total = $price * $quantity;
                                             $subtotal += $item_total;
                                             $qty_id = 'qty' . $index;
                                         ?> 
                                             <tr class="cart-item">
                                                 <td class="cart_product_img">
-                                                        <a href="#"><img src="<?php echo htmlspecialchars($item['image']); ?>" alt="Product" style="max-width: 100px;"></a>
+                                                        <a href="#"><img src="<?php echo htmlspecialchars($image); ?>" alt="Product" style="max-width: 100px;"></a>
                                                 </td>
                                                 <td class="cart_product_desc">
-                                                    <h5><?php echo htmlspecialchars($item['name']); ?></h5>
+                                                    <h5><?php echo htmlspecialchars($name); ?></h5>
                                                 </td>
-                                                <td class="price" data-price="<?php echo $item['price']; ?>">
-                                                    <span><?php echo number_format($item['price'], 0, ',', '.'); ?> VND</span>
+                                                <td class="price" data-price="<?php echo $price; ?>">
+                                                    <span><?php echo number_format($price, 0, ',', '.'); ?> VND</span>
                                                 </td>
                                                 <td class="qty">
                                                     <div class="qty-btn d-flex">
                                                         <div class="quantity">
                                                             <button type="button" class="qty-btn qty-minus">-</button>
-                                                            <input type="number" class="qty-text" id="<?php echo $qty_id; ?>" step="1" min="1" max="300" name="quantity" value="<?php echo htmlspecialchars($item['quantity']); ?>" data-id="<?php echo $item['id']; ?>">
+                                                            <input type="number" class="qty-text" id="<?php echo $qty_id; ?>" step="1" min="1" max="300" name="quantity" value="<?php echo htmlspecialchars($quantity); ?>" data-id="<?php echo htmlspecialchars($id); ?>">
                                                             <button type="button" class="qty-btn qty-plus">+</button>
                                                         </div>
                                                     </div>

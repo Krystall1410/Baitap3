@@ -15,19 +15,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
         }
 
 
-        $product_exists = false;
-        foreach ($_SESSION['cart'] as &$item) {
-            if ($item['id'] == $product_id_to_add) {
-                $item['quantity'] += $quantity_to_add; 
-                $product_exists = true;
-                break;
+        // Lấy thông tin sản phẩm từ DB để lưu đầy đủ vào session (name, price, image)
+        $stmt = $mysqli->prepare("SELECT id, name, price, image FROM products WHERE id = ?");
+        $stmt->bind_param("i", $product_id_to_add);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $prod = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($prod) {
+            // Sử dụng key theo product id để tránh trùng nhiều entry
+            if (!isset($_SESSION['cart'][$product_id_to_add])) {
+                $_SESSION['cart'][$product_id_to_add] = [
+                    'id' => $prod['id'],
+                    'name' => $prod['name'],
+                    'price' => (float)$prod['price'],
+                    'image' => '/baitap3/uploads/products/' . $prod['image'],
+                    'quantity' => $quantity_to_add
+                ];
+            } else {
+                $_SESSION['cart'][$product_id_to_add]['quantity'] += $quantity_to_add;
             }
-        }
-        unset($item);
-
-
-        if (!$product_exists) {
-            $_SESSION['cart'][] = ['id' => $product_id_to_add, 'quantity' => $quantity_to_add];
         }
     }
 }

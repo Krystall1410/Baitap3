@@ -1,7 +1,7 @@
 <?php
 
 define('APP_ROOT', dirname(__DIR__, 2)); 
-
+//
 define('BASE_URL', '/baitap3'); 
 define('BRAND_URL', BASE_URL . '/php/brand');
 define('CATEGORY_URL', BASE_URL . '/php/category');
