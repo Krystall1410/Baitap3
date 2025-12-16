@@ -9,6 +9,68 @@ define('PRODUCT_URL', BASE_URL . '/php/products');
  
 session_start();
 
+require_once __DIR__ . '/config.php';
+
+$resetMessage = '';
+$resetMessageType = '';
+$resetUsernameValue = '';
+$shouldShowResetForm = false;
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['reset_action'])) {
+    $resetUsername = trim($_POST['reset_username'] ?? '');
+    $resetPassword = $_POST['reset_password'] ?? '';
+    $resetUsernameValue = $resetUsername;
+
+    if ($resetUsername === '' || $resetPassword === '') {
+        $resetMessage = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu mới.';
+        $resetMessageType = 'error';
+    } elseif (strlen($resetPassword) < 6) {
+        $resetMessage = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+        $resetMessageType = 'error';
+    } else {
+        $checkStmt = $mysqli->prepare('SELECT id FROM users WHERE username = ?');
+        if ($checkStmt) {
+            $checkStmt->bind_param('s', $resetUsername);
+            $checkStmt->execute();
+            $checkStmt->store_result();
+
+            if ($checkStmt->num_rows === 1) {
+                $checkStmt->bind_result($userId);
+                $checkStmt->fetch();
+                $checkStmt->free_result();
+
+                $newPasswordHash = password_hash($resetPassword, PASSWORD_DEFAULT);
+                $updateStmt = $mysqli->prepare('UPDATE users SET password = ? WHERE id = ?');
+                if ($updateStmt) {
+                    $updateStmt->bind_param('si', $newPasswordHash, $userId);
+                    if ($updateStmt->execute()) {
+                        $resetMessage = 'Đã cập nhật mật khẩu mới. Vui lòng đăng nhập lại.';
+                        $resetMessageType = 'success';
+                        $resetUsernameValue = '';
+                    } else {
+                        $resetMessage = 'Không thể cập nhật mật khẩu. Vui lòng thử lại sau.';
+                        $resetMessageType = 'error';
+                    }
+                    $updateStmt->close();
+                } else {
+                    $resetMessage = 'Không thể chuẩn bị truy vấn cập nhật.';
+                    $resetMessageType = 'error';
+                }
+            } else {
+                $resetMessage = 'Không tìm thấy tài khoản với tên đăng nhập đã nhập.';
+                $resetMessageType = 'error';
+            }
+
+            $checkStmt->close();
+        } else {
+            $resetMessage = 'Không thể chuẩn bị truy vấn kiểm tra tài khoản.';
+            $resetMessageType = 'error';
+        }
+    }
+}
+
+$shouldShowResetForm = $resetMessage !== '';
+
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
     if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
         header('Location: ' . BASE_URL . '/php/login/admin.php');
@@ -22,11 +84,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true) {
 
 $saved_username = '';
 
-if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
     $saved_username = $_COOKIE['username'];
-
-    // nạp config và kiểm tra
-    require_once __DIR__ . "/config.php";
 
     $sql = "SELECT id, username, role FROM users WHERE username = ?";
     if ($stmt = $mysqli->prepare($sql)) {
@@ -52,6 +111,9 @@ if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
         }
         $stmt->close();
     }
+}
+
+if (isset($mysqli) && $mysqli instanceof mysqli) {
     $mysqli->close();
 }
 ?>
@@ -110,11 +172,82 @@ if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
         }
         .remember-me {
             margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
             text-align: left;
+        }
+        .remember-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+            margin: 0;
+        }
+        .forgot-toggle {
+            display: inline-block;
+            color: #555;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+        .forgot-toggle:hover,
+        .forgot-toggle:focus {
+            color: #555;
+            text-decoration: underline;
+            outline: none;
         }
         .error-message {
             color: #d9534f;
             margin-bottom: 15px;
+        }
+        .forgot-password {
+            margin-top: 35px;
+            text-align: left;
+            display: none;
+        }
+        .forgot-password.visible {
+            display: block;
+        }
+        .forgot-password h3 {
+            margin-bottom: 12px;
+            color: #333;
+            font-size: 18px;
+        }
+        .forgot-password p.description {
+            margin: 0 0 12px;
+            color: #666;
+            font-size: 14px;
+        }
+        .forgot-password input[type="text"],
+        .forgot-password input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .forgot-password button {
+            margin-top: 2px;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .message.success {
+            background: #e6f7ea;
+            color: #2b8a3e;
+            border: 1px solid #c7eed1;
+        }
+        .message.error {
+            background: #fff0f0;
+            color: #d9534f;
+            border: 1px solid #f3c7c7;
         }
     </style>
 </head>
@@ -127,14 +260,49 @@ if (isset($_COOKIE['username']) && !empty($_COOKIE['username'])) {
         }
         ?>
         <form action="process_login.php" method="post">
-            <input type="text" name="username" placeholder="Tên đăng nhập" value="<?php echo isset($_COOKIE['username']) ? htmlspecialchars($_COOKIE['username']) : ''; ?>" required>
-            <input type="password" name="password" placeholder="Mật khẩu" value="<?php echo isset($_COOKIE['password']) ? htmlspecialchars($_COOKIE['password']) : ''; ?>" required>
+            <input type="text" name="username" placeholder="Tên đăng nhập" value="<?php echo isset($_COOKIE['username']) ? htmlspecialchars($_COOKIE['username'], ENT_QUOTES, 'UTF-8') : ''; ?>" required>
+            <input type="password" name="password" placeholder="Mật khẩu" value="<?php echo isset($_COOKIE['password']) ? htmlspecialchars($_COOKIE['password'], ENT_QUOTES, 'UTF-8') : ''; ?>" required>
             <div class="remember-me">
-                <input type="checkbox" name="remember" id="remember">
-                <label for="remember">Ghi nhớ tôi</label>
+                <label for="remember" class="remember-label">
+                    <input type="checkbox" name="remember" id="remember">
+                    Ghi nhớ tôi
+                </label>
+                <span class="forgot-toggle" id="forgotToggle" role="button" tabindex="0">Quên mật khẩu?</span>
             </div>
             <button type="submit">Đăng nhập</button>
         </form>
+        <div class="forgot-password<?php echo $shouldShowResetForm ? ' visible' : ''; ?>" id="forgotSection">
+            <h3>Quên mật khẩu?</h3>
+            <p class="description">Nhập tên đăng nhập của bạn để đặt lại mật khẩu mới.</p>
+            <?php if ($resetMessage !== ''): ?>
+                <p class="message <?php echo $resetMessageType === 'success' ? 'success' : 'error'; ?>"><?php echo htmlspecialchars($resetMessage, ENT_QUOTES, 'UTF-8'); ?></p>
+            <?php endif; ?>
+            <form action="login.php" method="post">
+                <input type="hidden" name="reset_action" value="1">
+                <input type="text" name="reset_username" placeholder="Tên đăng nhập" value="<?php echo htmlspecialchars($resetUsernameValue ?? '', ENT_QUOTES, 'UTF-8'); ?>" required>
+                <input type="password" name="reset_password" placeholder="Mật khẩu mới" required>
+                <button type="submit">Đặt lại mật khẩu</button>
+            </form>
+        </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleBtn = document.getElementById('forgotToggle');
+            const resetSection = document.getElementById('forgotSection');
+            function toggleReset() {
+                resetSection.classList.toggle('visible');
+            }
+
+            if (toggleBtn && resetSection) {
+                toggleBtn.addEventListener('click', toggleReset);
+                toggleBtn.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        toggleReset();
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

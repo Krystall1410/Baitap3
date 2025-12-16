@@ -1,6 +1,19 @@
 <?php
 session_start();
 require_once __DIR__ . '/../php/login/config.php';
+
+$featuredProducts = [];
+$stmtFeatured = $mysqli->prepare("SELECT id, name, price, image FROM products ORDER BY id DESC LIMIT 9");
+if ($stmtFeatured) {
+    $stmtFeatured->execute();
+    $resultFeatured = $stmtFeatured->get_result();
+    if ($resultFeatured) {
+        while ($row = $resultFeatured->fetch_assoc()) {
+            $featuredProducts[] = $row;
+        }
+    }
+    $stmtFeatured->close();
+}
 ?><!DOCTYPE html>
 <html lang="vietnamese">
 
@@ -153,125 +166,38 @@ require_once __DIR__ . '/../php/login/config.php';
         
         <div class="products-catagories-area clearfix">
             <div class="amado-pro-catagory clearfix">
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/ghedon.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 1.000.000VND</p>
-                            <h4>Ghế</h4>
-
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/ban.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 500.000VND</p>
-                            <h4>Bàn</h4>
-                        </div>
-                    </a>
-                </div>
-
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/denchum.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 5.000.000VND</p>
-                            <h4>Đèn chùm</h4>
-
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/sofa.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 2.000.000VND</p>
-                            <h4>Sofa</h4>
-                           
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/bonruamat.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 1.500.000VND</p>
-                            <h4>Lavabo</h4>
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/tuphongkhach.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 3.000.000VND</p>
-                            <h4>Tủ</h4>
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/guong.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 1.000.000VND</p>
-                            <h4>Gương</h4>
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/remcua.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 700.000VND</p>
-                            <h4>Rèm cửa</h4>
-                        </div>
-                    </a>
-                </div>
-
-                
-                <div class="single-products-catagory clearfix">
-                    <a href="shop.php">
-                        <img src="../img/bg-img/giasach.jpg" alt="">
-                        
-                        <div class="hover-content">
-                            <div class="line"></div>
-                            <p>Từ 1.500.000VND</p>
-                            <h4>Kệ treo tường</h4>
-                        </div>
-                    </a>
-                </div>
+                <?php if (!empty($featuredProducts)): ?>
+                    <?php foreach ($featuredProducts as $product):
+                        $productId = isset($product['id']) ? (int)$product['id'] : 0;
+                        $productName = isset($product['name']) ? $product['name'] : 'Sản phẩm';
+                        $priceValue = isset($product['price']) ? (float)$product['price'] : 0;
+                        $priceLabel = $priceValue > 0 ? 'Từ ' . number_format($priceValue, 0, ',', '.') . ' VND' : 'Giá đang cập nhật';
+                        $imagePath = !empty($product['image']) ? '/baitap3/uploads/products/' . ltrim($product['image'], '/') : '../img/bg-img/sofa.jpg';
+                        $productLink = $productId > 0 ? 'product-details.php?id=' . $productId : 'shop.php';
+                    ?>
+                    <div class="single-products-catagory clearfix">
+                        <a href="<?= htmlspecialchars($productLink); ?>">
+                            <img src="<?= htmlspecialchars($imagePath); ?>" alt="<?= htmlspecialchars($productName); ?>">
+                            <div class="hover-content">
+                                <div class="line"></div>
+                                <p><?= htmlspecialchars($priceLabel); ?></p>
+                                <h4><?= htmlspecialchars($productName); ?></h4>
+                            </div>
+                        </a>
+                    </div>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="single-products-catagory clearfix">
+                        <a href="shop.php">
+                            <img src="../img/bg-img/sofa.jpg" alt="Tiếp tục mua sắm">
+                            <div class="hover-content">
+                                <div class="line"></div>
+                                <p>Chưa có sản phẩm để hiển thị</p>
+                                <h4>Khám phá cửa hàng</h4>
+                            </div>
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
         

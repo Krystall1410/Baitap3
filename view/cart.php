@@ -82,6 +82,11 @@ require_once __DIR__ . '/../php/login/config.php';
             -webkit-appearance: none; 
             margin: 0;
         }
+        .quantity.reached-stock .qty-btn.qty-plus {
+            background-color: #ffecec;
+            cursor: not-allowed;
+            color: #b30000;
+        }
     </style>
 
 </head>
@@ -235,6 +240,8 @@ require_once __DIR__ . '/../php/login/config.php';
                                             $name = isset($item['name']) ? $item['name'] : 'Sản phẩm';
                                             $image = isset($item['image']) ? $item['image'] : '';
                                             $id = isset($item['id']) ? $item['id'] : '';
+                                            $stock = isset($item['stock']) && $item['stock'] !== null ? (int)$item['stock'] : null;
+                                            $maxQuantity = ($stock !== null && $stock > 0) ? $stock : 300;
 
                                             $item_total = $price * $quantity;
                                             $subtotal += $item_total;
@@ -254,7 +261,7 @@ require_once __DIR__ . '/../php/login/config.php';
                                                     <div class="qty-btn d-flex">
                                                         <div class="quantity">
                                                             <button type="button" class="qty-btn qty-minus">-</button>
-                                                            <input type="number" class="qty-text" id="<?php echo $qty_id; ?>" step="1" min="1" max="300" name="quantity" value="<?php echo htmlspecialchars($quantity); ?>" data-id="<?php echo htmlspecialchars($id); ?>">
+                                                            <input type="number" class="qty-text" id="<?php echo $qty_id; ?>" step="1" min="1" max="<?php echo $maxQuantity; ?>" name="quantity" value="<?php echo htmlspecialchars($quantity); ?>" data-id="<?php echo htmlspecialchars($id); ?>"<?php echo ($stock !== null && $stock > 0) ? ' data-stock="' . $stock . '"' : ''; ?>>
                                                             <button type="button" class="qty-btn qty-plus">+</button>
                                                         </div>
                                                     </div>
@@ -383,6 +390,35 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             return num.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1.') + ' VND';
         }
 
+        function clampQuantityToStock(quantityInput) {
+            const maxStock = parseInt(quantityInput.getAttribute('data-stock'), 10);
+            let currentVal = parseInt(quantityInput.value);
+
+            if (isNaN(currentVal) || currentVal < 1) {
+                currentVal = 1;
+            }
+
+            if (!isNaN(maxStock) && maxStock > 0 && currentVal > maxStock) {
+                currentVal = maxStock;
+            }
+
+            quantityInput.value = currentVal;
+            return { value: currentVal, maxStock };
+        }
+
+        function updateStockState(quantityInput, quantityWrapper) {
+            const maxStock = parseInt(quantityInput.getAttribute('data-stock'), 10);
+            const currentVal = parseInt(quantityInput.value);
+
+            if (!isNaN(maxStock) && maxStock > 0 && !isNaN(currentVal) && currentVal >= maxStock) {
+                quantityWrapper.classList.add('reached-stock');
+                quantityWrapper.setAttribute('title', 'Đã đạt số lượng tối đa trong kho');
+            } else {
+                quantityWrapper.classList.remove('reached-stock');
+                quantityWrapper.removeAttribute('title');
+            }
+        }
+
        
         function updateCartSummary() {
             let subtotal = 0;
@@ -409,6 +445,9 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const quantityInput = quantityWrapper.querySelector('.qty-text');
             const productId = quantityInput.getAttribute('data-id');
 
+            clampQuantityToStock(quantityInput);
+            updateStockState(quantityInput, quantityWrapper);
+
         
             const minusBtn = quantityWrapper.querySelector('.qty-minus');
             minusBtn.addEventListener('click', function() {
@@ -416,7 +455,8 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
                 if (!isNaN(currentVal) && currentVal > 1) {
                     quantityInput.value = currentVal - 1;
                     updateCartSummary();
-                    updateCartInSession(productId, quantityInput.value);
+                    updateCartInSession(productId, quantityInput.value, quantityInput, quantityWrapper);
+                    updateStockState(quantityInput, quantityWrapper);
                 }
             });
 
@@ -424,30 +464,117 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
             const plusBtn = quantityWrapper.querySelector('.qty-plus');
             plusBtn.addEventListener('click', function() {
                 let currentVal = parseInt(quantityInput.value);
+                const stockInfo = clampQuantityToStock(quantityInput);
+                currentVal = stockInfo.value;
+
                 if (!isNaN(currentVal)) {
+                    if (!isNaN(stockInfo.maxStock) && stockInfo.maxStock > 0) {
+                        if (currentVal >= stockInfo.maxStock) {
+                            quantityInput.value = stockInfo.maxStock;
+                            updateStockState(quantityInput, quantityWrapper);
+                            updateCartSummary();
+                            updateCartInSession(productId, quantityInput.value);
+                            return;
+                        }
+                    }
+
                     quantityInput.value = currentVal + 1;
+                    clampQuantityToStock(quantityInput);
                     updateCartSummary();
-                    updateCartInSession(productId, quantityInput.value);
+                    updateCartInSession(productId, quantityInput.value, quantityInput, quantityWrapper);
+                    updateStockState(quantityInput, quantityWrapper);
                 }
+            });
+
+            quantityInput.addEventListener('change', function() {
+                clampQuantityToStock(quantityInput);
+                updateStockState(quantityInput, quantityWrapper);
+                updateCartSummary();
+                updateCartInSession(productId, quantityInput.value, quantityInput, quantityWrapper);
+            });
+
+            quantityInput.addEventListener('input', function() {
+                clampQuantityToStock(quantityInput);
+                updateStockState(quantityInput, quantityWrapper);
             });
         });
 
-        function updateCartInSession(productId, quantity) {
-            /*
-            // PHẦN NÀY TẠM THỜI ĐƯỢC VÔ HIỆU HÓA
-            // Chức năng này sẽ gửi yêu cầu AJAX để cập nhật số lượng sản phẩm trong session của PHP.
-            // Khi cần sử dụng, chỉ cần bỏ các dấu ghi chú này đi.
-            fetch('../php/cart/update_cart.php', {
+        function updateCartInSession(productId, quantity, quantityInput, quantityWrapper) {
+            const params = new URLSearchParams();
+            params.append('product_id', productId);
+            params.append('quantity', quantity);
+
+            fetch('update_cart.php', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
-                body: 'product_id=' + productId + '&quantity=' + quantity
+                body: params.toString()
             })
             .then(response => response.json())
-            .then(data => console.log('Phản hồi cập nhật giỏ hàng:', data))
+            .then(data => {
+                if (!data) {
+                    return;
+                }
+
+                if (!data.success) {
+                    console.warn('Không thể cập nhật giỏ hàng:', data.message || 'Unknown error');
+                    return;
+                }
+
+                if (data.removed && quantityWrapper) {
+                    const row = quantityWrapper.closest('.cart-item');
+                    if (row) {
+                        row.remove();
+                    }
+                }
+
+                let rowElement = null;
+                if (quantityWrapper) {
+                    rowElement = quantityWrapper.closest('.cart-item');
+                }
+
+                if (rowElement && typeof data.price !== 'undefined') {
+                    const priceElement = rowElement.querySelector('.price');
+                    if (priceElement) {
+                        priceElement.setAttribute('data-price', data.price);
+                        const priceSpan = priceElement.querySelector('span');
+                        if (priceSpan) {
+                            priceSpan.textContent = formatNumber(data.price);
+                        }
+                    }
+                }
+
+                if (quantityInput && typeof data.quantity !== 'undefined') {
+                    quantityInput.value = data.quantity;
+                }
+
+                if (quantityInput && typeof data.stock !== 'undefined') {
+                    if (data.stock !== null && data.stock > 0) {
+                        quantityInput.setAttribute('data-stock', data.stock);
+                        quantityInput.setAttribute('max', data.stock);
+                    } else {
+                        quantityInput.removeAttribute('data-stock');
+                        quantityInput.setAttribute('max', 300);
+                    }
+                }
+
+                if (quantityInput && quantityWrapper) {
+                    clampQuantityToStock(quantityInput);
+                    updateStockState(quantityInput, quantityWrapper);
+                }
+
+                if (typeof data.subtotal !== 'undefined') {
+                    document.getElementById('subtotal').textContent = formatNumber(data.subtotal);
+                }
+
+                if (typeof data.total !== 'undefined') {
+                    document.getElementById('total').textContent = formatNumber(data.total);
+                }
+
+                updateCartSummary();
+            })
             .catch(error => console.error('Lỗi khi cập nhật giỏ hàng:', error));
-            */
         }
     });
     </script>

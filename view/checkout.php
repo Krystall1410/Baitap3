@@ -2,6 +2,41 @@
 session_start();
 require_once __DIR__ . '/../php/login/config.php';
 
+$checkoutForm = $_SESSION['checkout_form'] ?? [];
+$checkoutError = $_SESSION['checkout_error'] ?? '';
+unset($_SESSION['checkout_form'], $_SESSION['checkout_error']);
+
+$provinceFallbackList = [
+    ['value' => 'hanoi', 'label' => 'Hà Nội'],
+    ['value' => 'hcm', 'label' => 'Tp Hồ Chí Minh'],
+    ['value' => 'quangninh', 'label' => 'Quảng Ninh'],
+    ['value' => 'haiphong', 'label' => 'Hải Phòng'],
+    ['value' => 'dalat', 'label' => 'Đà Lạt'],
+    ['value' => 'danang', 'label' => 'Đà Nẵng'],
+    ['value' => 'phutho', 'label' => 'Phú Thọ'],
+    ['value' => 'other', 'label' => 'Khác']
+];
+
+function renderProvinceOptions(array $options, ?string $selected): string
+{
+    $selected = (string)($selected ?? '');
+    $html = '<option value="" disabled' . ($selected === '' ? ' selected' : '') . '>Chọn tỉnh/thành</option>';
+
+    foreach ($options as $item) {
+        if (empty($item['value']) || empty($item['label'])) {
+            continue;
+        }
+
+        $rawValue = (string)$item['value'];
+        $valueAttr = htmlspecialchars($rawValue, ENT_QUOTES, 'UTF-8');
+        $labelAttr = htmlspecialchars((string)$item['label'], ENT_QUOTES, 'UTF-8');
+        $isSelected = $selected === $rawValue ? ' selected' : '';
+        $html .= '<option value="' . $valueAttr . '"' . $isSelected . '>' . $labelAttr . '</option>';
+    }
+
+    return $html;
+}
+
 
 $subtotal = 0;
 if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
@@ -173,87 +208,97 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                                 <h2>Thông tin thanh toán</h2>
                             </div>
 
-                            <form action="#" method="post" id="checkoutForm">
+                            <?php if (!empty($checkoutError)): ?>
+                                <div class="alert alert-danger" role="alert">
+                                    <?= htmlspecialchars($checkoutError) ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <form action="../php/order/process_checkout.php" method="post" id="checkoutForm">
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" id="first_name" value="" placeholder="Tên" required>
+                                        <input type="text" class="form-control" id="first_name" name="first_name" value="<?= htmlspecialchars($checkoutForm['first_name'] ?? '') ?>" placeholder="Tên" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" id="last_name" value="" placeholder="Họ" required>
+                                        <input type="text" class="form-control" id="last_name" name="last_name" value="<?= htmlspecialchars($checkoutForm['last_name'] ?? '') ?>" placeholder="Họ" required>
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <input type="text" class="form-control" id="company" placeholder="Tên công ty" value="">
+                                        <input type="text" class="form-control" id="company" name="company" placeholder="Tên công ty" value="<?= htmlspecialchars($checkoutForm['company'] ?? '') ?>">
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <input type="email" class="form-control" id="email" placeholder="Email" value="" required>
+                                        <input type="email" class="form-control" id="email" name="email" placeholder="Email" value="<?= htmlspecialchars($checkoutForm['email'] ?? '') ?>" required>
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <select class="w-100" id="country" required>
-                                        <option value="usa">Hà Nội</option>
-                                        <option value="uk">Tp Hồ Chí Minh</option>
-                                        <option value="ger">Quảng Ninh</option>
-                                        <option value="fra">Hải Phòng</option>
-                                        <option value="ind">Đà Lạt</option>
-                                        <option value="aus">Đà Nẵng</option>
-                                        <option value="bra">Phú Thọ</option>
-                                        <option value="cana">Khác</option>
-                                    </select>
+                                        <select
+                                            class="w-100"
+                                            id="country"
+                                            name="country"
+                                            required
+                                        >
+                                            <?= renderProvinceOptions($provinceFallbackList, $checkoutForm['country'] ?? '') ?>
+                                        </select>
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <input type="text" class="form-control mb-3" id="street_address" placeholder="Quận/Huyện" value="" required>
+                                        <input type="text" class="form-control mb-3" id="street_address" name="street_address" placeholder="Quận/Huyện" value="<?= htmlspecialchars($checkoutForm['street_address'] ?? '') ?>" required>
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <input type="text" class="form-control" id="city" placeholder="Chi tiết địa chỉ" value="" required>
+                                        <input type="text" class="form-control" id="city" name="city" placeholder="Chi tiết địa chỉ" value="<?= htmlspecialchars($checkoutForm['city'] ?? '') ?>" required>
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" id="zipCode" placeholder="Mã ZIP" value="">
+                                        <input type="text" class="form-control" id="zipCode" name="zip_code" placeholder="Mã ZIP" value="<?= htmlspecialchars($checkoutForm['zip_code'] ?? '') ?>">
                                     </div>
                                     <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" id="phone_number"  placeholder="SĐT liên hệ" value="" required>
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="phone_number"
+                                            name="phone_number"
+                                            placeholder="SĐT liên hệ"
+                                            value="<?= htmlspecialchars($checkoutForm['phone_number'] ?? '') ?>"
+                                            inputmode="numeric"
+                                            pattern="^[0-9]+$"
+                                            title="Vui lòng chỉ nhập số"
+                                            required
+                                        >
                                     </div>
                                     <div class="col-12 mb-3">
-                                        <textarea name="comment" class="form-control w-100" id="comment" cols="30" rows="10" placeholder="Chú thích cho đơn hàng của bạn"></textarea>
+                                        <textarea name="comment" class="form-control w-100" id="comment" cols="30" rows="10" placeholder="Chú thích cho đơn hàng của bạn"><?= htmlspecialchars($checkoutForm['comment'] ?? '') ?></textarea>
                                     </div>
 
                                     <div class="col-12">
                                         <div class="custom-control custom-checkbox d-block">
-                                            <input type="checkbox" class="custom-control-input" id="customCheck3">
+                                            <input type="checkbox" class="custom-control-input" id="customCheck3" name="ship_to_different" <?= (isset($checkoutForm['ship_to_different']) && $checkoutForm['ship_to_different'] === '1') ? 'checked' : '' ?>>
                                             <label class="custom-control-label" for="customCheck3">Giao tới địa chỉ khác</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 mt-4" id="shipping_address_form" style="display: none;">
+                                        <hr>
+                                        <h4 class="mb-3">Địa chỉ giao hàng khác</h4>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <input type="text" class="form-control" placeholder="Tên" name="shipping_first_name" value="<?= htmlspecialchars($checkoutForm['shipping_first_name'] ?? '') ?>">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <input type="text" class="form-control" placeholder="Họ" name="shipping_last_name" value="<?= htmlspecialchars($checkoutForm['shipping_last_name'] ?? '') ?>">
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <select
+                                                    class="w-100"
+                                                    name="shipping_country"
+                                                >
+                                                    <?= renderProvinceOptions($provinceFallbackList, $checkoutForm['shipping_country'] ?? '') ?>
+                                                </select>
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <input type="text" class="form-control" placeholder="Quận/Huyện" name="shipping_street_address" value="<?= htmlspecialchars($checkoutForm['shipping_street_address'] ?? '') ?>">
+                                            </div>
+                                            <div class="col-12 mb-3">
+                                                <input type="text" class="form-control" placeholder="Chi tiết địa chỉ" name="shipping_city" value="<?= htmlspecialchars($checkoutForm['shipping_city'] ?? '') ?>">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </form>
-
-                            <div id="shipping_address_form" class="mt-4" style="display: none;">
-                                <hr>
-                                <h4 class="mb-3">Địa chỉ giao hàng khác</h4>
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" placeholder="Tên" name="shipping_first_name">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <input type="text" class="form-control" placeholder="Họ" name="shipping_last_name">
-                                    </div>
-                                    <div class="col-12 mb-3">
-                                        <select class="w-100" name="shipping_country">
-                                            <option value="hanoi">Hà Nội</option>
-                                            <option value="hcm">Tp Hồ Chí Minh</option>
-                                            <option value="quangninh">Quảng Ninh</option>
-                                            <option value="haiphong">Hải Phòng</option>
-                                            <option value="dalat">Đà Lạt</option>
-                                            <option value="danang">Đà Nẵng</option>
-                                            <option value="phutho">Phú Thọ</option>
-                                            <option value="other">Khác</option>
-                                        </select>
-                                    </div>
-                                    <div class="col-12 mb-3">
-                                        <input type="text" class="form-control" placeholder="Quận/Huyện" name="shipping_street_address">
-                                    </div>
-                                    <div class="col-12 mb-3">
-                                        <input type="text" class="form-control" placeholder="Chi tiết địa chỉ" name="shipping_city">
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div class="col-12 col-lg-4">
@@ -268,12 +313,12 @@ if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                             <div class="payment-method">
                                 
                                 <div class="custom-control custom-radio mr-sm-2">
-                                    <input type="radio" class="custom-control-input" id="cod" name="payment_method" value="cod" checked>
+                                    <input type="radio" class="custom-control-input" id="cod" name="payment_method" value="cod" <?= (($checkoutForm['payment_method'] ?? 'cod') === 'cod') ? 'checked' : '' ?> form="checkoutForm">
                                     <label class="custom-control-label" for="cod">Thanh toán khi nhận hàng</label>
                                 </div>
                                 
                                 <div class="custom-control custom-radio mr-sm-2">
-                                    <input type="radio" class="custom-control-input" id="paypal" name="payment_method" value="paypal">
+                                    <input type="radio" class="custom-control-input" id="paypal" name="payment_method" value="paypal" <?= (($checkoutForm['payment_method'] ?? 'cod') === 'paypal') ? 'checked' : '' ?> form="checkoutForm">
                                     <label class="custom-control-label" for="paypal">Thanh toán bằng thẻ tín dụng <img class="ml-15" src="../img/core-img/paypal.png" alt=""></label>
                                 </div>
                             </div>
@@ -387,21 +432,29 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         const shipToDifferentAddressCheckbox = document.getElementById('customCheck3');
         const shippingAddressForm = document.getElementById('shipping_address_form');
 
-        shipToDifferentAddressCheckbox.addEventListener('change', function () {
-            if (this.checked) {
+        if (shipToDifferentAddressCheckbox && shippingAddressForm) {
+            shipToDifferentAddressCheckbox.addEventListener('change', function () {
+                shippingAddressForm.style.display = this.checked ? 'block' : 'none';
+            });
+
+            if (shipToDifferentAddressCheckbox.checked) {
                 shippingAddressForm.style.display = 'block';
-            } else {
-                shippingAddressForm.style.display = 'none';
             }
-        });
+        }
 
         const checkoutForm = document.getElementById('checkoutForm');
         if (checkoutForm) {
             checkoutForm.addEventListener('submit', function (event) {
-                
                 if (!this.checkValidity()) {
-                    event.preventDefault(); 
+                    event.preventDefault();
                 }
+            });
+        }
+
+        const phoneInput = document.getElementById('phone_number');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9]/g, '');
             });
         }
     });

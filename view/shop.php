@@ -7,7 +7,7 @@ if (isset($_GET['add_to_cart'])) {
     $product_id = (int)$_GET['add_to_cart'];
 
  
-    $stmt = $mysqli->prepare("SELECT id, name, price, image FROM products WHERE id = ?");
+    $stmt = $mysqli->prepare("SELECT id, name, price, image, stock FROM products WHERE id = ?");
     $stmt->bind_param("i", $product_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -19,12 +19,16 @@ if (isset($_GET['add_to_cart'])) {
             $_SESSION['cart'] = [];
         }
  
+        $availableStock = isset($product['stock']) ? (int)$product['stock'] : null;
+
         $_SESSION['cart'][$product_id] = [
             'id' => $product['id'],
             'name' => $product['name'],
             'price' => $product['price'],
             'image' => '/baitap3/uploads/products/' . $product['image'],
-            'quantity' => 1
+            'quantity' => 1,
+            'stock' => $availableStock,
+            'added_at' => time()
         ];
     }
 
@@ -37,6 +41,7 @@ $brand_id = $_GET['brand'] ?? null;
 $min_price = isset($_GET['min_price']) ? (float)$_GET['min_price'] : null;
 $max_price = isset($_GET['max_price']) ? (float)$_GET['max_price'] : null;
 $search_term = isset($_GET['search']) ? trim($_GET['search']) : null;
+$sort_order = $_GET['sort'] ?? 'newest';
 ?><!DOCTYPE html>
 <?php
 // Pagination settings
@@ -105,6 +110,21 @@ $offset = ($current_page - 1) * $products_per_page;
         .single-product-wrapper:hover .product-img .hover-img {
             opacity: 1;
             visibility: visible;
+        }
+
+        .single-product-wrapper .product-img a {
+            display: block;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .single-product-wrapper .product-img a img {
+            transition: opacity 0.3s ease;
+        }
+
+        .single-product-wrapper .product-img a:hover img,
+        .single-product-wrapper .product-img a:focus img {
+            opacity: 0.85;
         }
     </style>
 
@@ -330,7 +350,26 @@ $offset = ($current_page - 1) * $products_per_page;
 
                     if (isset($sql_join_cat)) $sql .= $sql_join_cat;
                     if (!empty($where)) $sql .= " WHERE " . implode(" AND ", $where);
-                    $sql .= " ORDER BY p.id DESC LIMIT ? OFFSET ?";
+                    $orderClause = " ORDER BY p.id DESC";
+                    switch ($sort_order) {
+                        case 'price_desc':
+                            $orderClause = " ORDER BY p.price DESC";
+                            break;
+                        case 'price_asc':
+                            $orderClause = " ORDER BY p.price ASC";
+                            break;
+                        case 'name_asc':
+                            $orderClause = " ORDER BY p.name ASC";
+                            break;
+                        case 'name_desc':
+                            $orderClause = " ORDER BY p.name DESC";
+                            break;
+                        default:
+                            $orderClause = " ORDER BY p.id DESC";
+                            break;
+                    }
+
+                    $sql .= $orderClause . " LIMIT ? OFFSET ?";
                     $types .= 'ii';
                     $params[] = $products_per_page;
                     $params[] = $offset;
@@ -379,11 +418,13 @@ $offset = ($current_page - 1) * $products_per_page;
                     ?>
                     <div class="col-12 col-sm-6 col-md-12 col-xl-6">
                         <div class="single-product-wrapper">
-            
+
                             <div class="product-img">
-                                <img src="/baitap3/uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
-                                
-                                <img class="hover-img" src="img/core-img/logo.png" alt="">
+                                <a href="product-details.php?id=<?php echo $row['id']; ?>" aria-label="Xem chi tiết sản phẩm <?php echo htmlspecialchars($row['name']); ?>">
+                                    <img src="/baitap3/uploads/products/<?php echo htmlspecialchars($row['image']); ?>" alt="<?php echo htmlspecialchars($row['name']); ?>">
+
+                                    <img class="hover-img" src="img/core-img/logo.png" alt="">
+                                </a>
                             </div>
 
                             <!-- Mô tả sản phẩm -->
