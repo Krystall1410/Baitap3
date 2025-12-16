@@ -3,7 +3,7 @@ session_start();
 require_once __DIR__ . '/../php/login/config.php';
 
 $featuredProducts = [];
-$stmtFeatured = $mysqli->prepare("SELECT id, name, price, image FROM products WHERE is_active = 1 ORDER BY id DESC LIMIT 9");
+$stmtFeatured = $mysqli->prepare("SELECT id, name, price, image FROM products ORDER BY id DESC LIMIT 9");
 if ($stmtFeatured) {
     $stmtFeatured->execute();
     $resultFeatured = $stmtFeatured->get_result();
@@ -58,6 +58,13 @@ if ($stmtFeatured) {
         .dropdown-item:hover, .dropdown-item:focus {
             color: #fbb710;
             background-color: #f8f9fa;
+        }
+        .single-products-catagory .hover-content {
+            color: #fbb710;
+        }
+        .single-products-catagory .hover-content p,
+        .single-products-catagory .hover-content h4 {
+            color: #fbb710;
         }
     </style>
 
