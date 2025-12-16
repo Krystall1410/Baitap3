@@ -29,6 +29,12 @@ if ($page == 'process_product') {
 } else if ($page == 'delete_category') {
    include('../admin/category/delete_category.php');
 
+} else if ($page == 'delete_bill') {
+   include('../admin/bill/delete_bill.php');
+
+} else if ($page == 'process_user_role') {
+   include('../admin/user/process_user_role.php');
+
 }
 
 
@@ -103,12 +109,17 @@ if ($page == 'process_product') {
                      <li class="active">
                         <a href="#dashboard" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-dashboard yellow_color"></i> <span>Danh Mục</span></a>
                         <ul class="collapse list-unstyled" id="dashboard">
-                           <li><a href="admin.php?page=products">Sản phẩm — Danh sách</a></li>                           
-                           <li><a href="admin.php?page=brands">Thương hiệu — Danh sách</a></li>
-                           <li><a href="admin.php?page=categories">Danh mục — Danh sách</a></li>
+                           <li><a href="admin.php?page=products">Danh sách sản phẩm</a></li>                           
+                           <li><a href="admin.php?page=brands">Danh sách thương hiệu</a></li>
+                           <li><a href="admin.php?page=categories">Danh sách thể loại</a></li>
+                           <li><a href="admin.php?page=users">Tài khoản người dùng</a></li>
 
                         </ul>
                      </li>
+                     <li>
+                        <a href="admin.php?page=bills"><i class="fa fa-file-text-o orange_color"></i> <span>Hoá đơn</span></a>
+                     </li>
+                  </ul>
                </div>
             </nav>
             <!-- end sidebar -->
@@ -158,6 +169,12 @@ if ($page == 'process_product') {
                            include('../admin/category/category_form.php');
                         } else if ($page == 'categories') {
                            include('../admin/category/categories.php');
+                        } else if ($page == 'bills') {
+                           include('../admin/bill/bills.php');
+                        } else if ($page == 'bill_detail') {
+                           include('../admin/bill/bill_detail.php');
+                        } else if ($page == 'users') {
+                           include('../admin/user/users.php');
                         }
                         // Bạn có thể thêm các trường hợp khác ở đây với else if
                      ?>

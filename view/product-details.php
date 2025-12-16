@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
 
 
         // Lấy thông tin sản phẩm từ DB để lưu đầy đủ vào session (name, price, image)
-        $stmt = $mysqli->prepare("SELECT id, name, price, image FROM products WHERE id = ?");
+        $stmt = $mysqli->prepare("SELECT id, name, price, image, stock FROM products WHERE id = ?");
         $stmt->bind_param("i", $product_id_to_add);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -24,17 +24,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
         $stmt->close();
 
         if ($prod) {
+            $availableStock = isset($prod['stock']) ? (int)$prod['stock'] : null;
             // Sử dụng key theo product id để tránh trùng nhiều entry
             if (!isset($_SESSION['cart'][$product_id_to_add])) {
+                $initialQuantity = $quantity_to_add;
+                if ($availableStock !== null && $availableStock > 0) {
+                    $initialQuantity = min($initialQuantity, $availableStock);
+                }
+
                 $_SESSION['cart'][$product_id_to_add] = [
                     'id' => $prod['id'],
                     'name' => $prod['name'],
                     'price' => (float)$prod['price'],
                     'image' => '/baitap3/uploads/products/' . $prod['image'],
-                    'quantity' => $quantity_to_add
+                    'quantity' => $initialQuantity,
+                    'stock' => $availableStock,
+                    'added_at' => time()
                 ];
             } else {
-                $_SESSION['cart'][$product_id_to_add]['quantity'] += $quantity_to_add;
+                $newQuantity = $_SESSION['cart'][$product_id_to_add]['quantity'] + $quantity_to_add;
+                if ($availableStock !== null && $availableStock > 0) {
+                    $newQuantity = min($newQuantity, $availableStock);
+                }
+                $_SESSION['cart'][$product_id_to_add]['quantity'] = $newQuantity;
+                $_SESSION['cart'][$product_id_to_add]['stock'] = $availableStock;
+                $_SESSION['cart'][$product_id_to_add]['added_at'] = time();
             }
         }
     }
@@ -274,7 +288,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                     </div>
                                 </div>
                                 
-                                <p class="avaibility"><i class="fa fa-circle"></i> Còn hàng</p>
+                                <p class="avaibility"><i class="fa fa-circle"></i> Còn hàng<?php if (isset($product['stock'])): ?> (<?= (int)$product['stock']; ?>)<?php endif; ?></p>
                             </div>
                             
                             <div class="short_overview my-5">
