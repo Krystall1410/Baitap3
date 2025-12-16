@@ -81,7 +81,7 @@ while ($brand_row = $brand_res->fetch_assoc()) $brands[] = $brand_row;
          </div>
          <div class="form-row">
             <div class="col"><label>Giá</label><input name="price" class="form-control" required value="<?= htmlspecialchars($product['price']) ?>"></div>
-            <div class="col"><label>Kho</label><input name="stock" class="form-control" required value="<?= htmlspecialchars($product['stock']) ?>"></div>
+            <div class="col"><label>Kho</label><input type="number" name="stock" class="form-control" required value="<?= htmlspecialchars($product['stock']) ?>"></div>
             <div class="col"><label>Hiển thị</label>
                <select name="is_active" class="form-control">
                   <option value="1" <?= $product['is_active'] ? 'selected' : '' ?>>Có</option>
