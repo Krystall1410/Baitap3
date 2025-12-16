@@ -9,7 +9,29 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
 $flashMessage = $_SESSION['bill_flash'] ?? '';
 unset($_SESSION['bill_flash']);
 
-$result = $mysqli->query("SELECT id, first_name, last_name, email, phone_number, total_amount, created_at FROM invoices ORDER BY created_at DESC");
+function invoicesHaveShippingStatus(mysqli $db): bool
+{
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+
+    $check = $db->query("SHOW COLUMNS FROM invoices LIKE 'shipping_status'");
+    if ($check instanceof mysqli_result) {
+        $cached = $check->num_rows > 0;
+        $check->free();
+    } else {
+        $cached = false;
+    }
+
+    return $cached;
+}
+
+$hasShippingStatus = invoicesHaveShippingStatus($mysqli);
+$statusSelect = $hasShippingStatus ? "COALESCE(shipping_status, 'pending')" : "'pending'";
+
+$sql = "SELECT id, first_name, last_name, email, phone_number, total_amount, created_at, {$statusSelect} AS shipping_status FROM invoices ORDER BY created_at DESC";
+$result = $mysqli->query($sql);
 ?>
 <div class="white_shd full margin_bottom_30">
     <div class="full graph_head d-flex align-items-center" style="gap: 16px;">
@@ -31,6 +53,7 @@ $result = $mysqli->query("SELECT id, first_name, last_name, email, phone_number,
                         <th>SĐT</th>
                         <th>Tổng tiền</th>
                         <th>Ngày tạo</th>
+                        <th>Trạng thái</th>
                         <th>Hành động</th>
                     </tr>
                 </thead>
@@ -44,9 +67,21 @@ $result = $mysqli->query("SELECT id, first_name, last_name, email, phone_number,
                                 <td><?= htmlspecialchars($row['phone_number']) ?></td>
                                 <td><?= number_format((float)$row['total_amount'], 0, ',', '.') ?> VND</td>
                                 <td><?= htmlspecialchars(date('d/m/Y H:i', strtotime($row['created_at']))) ?></td>
-                                <td style="min-width: 160px;">
+                                <td>
+                                    <?php
+                                    $status = $row['shipping_status'] ?? 'pending';
+                                    $statusMap = [
+                                        'pending' => ['text' => 'Đang xử lý', 'class' => 'badge badge-warning'],
+                                        'shipping' => ['text' => 'Đang giao', 'class' => 'badge badge-info'],
+                                        'completed' => ['text' => 'Đã giao', 'class' => 'badge badge-success'],
+                                        'cancelled' => ['text' => 'Đã huỷ', 'class' => 'badge badge-secondary'],
+                                    ];
+                                    $meta = $statusMap[$status] ?? ['text' => ucfirst($status), 'class' => 'badge badge-light'];
+                                    ?>
+                                    <span class="<?= $meta['class'] ?>"><?= htmlspecialchars($meta['text']) ?></span>
+                                </td>
+                                <td style="min-width: 120px;">
                                     <a class="btn btn-sm btn-primary" href="admin.php?page=bill_detail&id=<?= (int)$row['id'] ?>">Xem</a>
-                                    <a class="btn btn-sm btn-danger" href="admin.php?page=delete_bill&id=<?= (int)$row['id'] ?>" onclick="return confirm('Bạn có chắc chắn muốn xoá hoá đơn này?');">Xoá</a>
                                 </td>
                             </tr>
                         <?php endwhile; ?>

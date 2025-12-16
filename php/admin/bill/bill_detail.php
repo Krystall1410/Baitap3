@@ -12,7 +12,23 @@ if ($invoiceId <= 0) {
     exit;
 }
 
-$stmt = $mysqli->prepare('SELECT * FROM invoices WHERE id = ?');
+$hasShippingStatus = (function (mysqli $db): bool {
+    static $cached = null;
+    if ($cached !== null) {
+        return $cached;
+    }
+    $check = $db->query("SHOW COLUMNS FROM invoices LIKE 'shipping_status'");
+    if ($check instanceof mysqli_result) {
+        $cached = $check->num_rows > 0;
+        $check->free();
+    } else {
+        $cached = false;
+    }
+    return $cached;
+})($mysqli);
+
+$statusSelect = $hasShippingStatus ? "COALESCE(shipping_status, 'pending')" : "'pending'";
+$stmt = $mysqli->prepare("SELECT invoices.*, {$statusSelect} AS shipping_status FROM invoices WHERE id = ?");
 $stmt->bind_param('i', $invoiceId);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -129,6 +145,17 @@ $provinceMap = loadProvinceMap();
                 <div class="heading1 margin_0">
                     <h2>Hoá đơn #<?= (int)$invoice['id'] ?></h2>
                     <p class="mt-1 mb-0">Tạo lúc: <?= htmlspecialchars(date('d/m/Y H:i', strtotime($invoice['created_at']))) ?></p>
+                    <?php
+                    $status = $invoice['shipping_status'] ?? 'pending';
+                    $statusMap = [
+                        'pending' => ['text' => 'Đang xử lý', 'class' => 'badge badge-warning'],
+                        'shipping' => ['text' => 'Đang giao', 'class' => 'badge badge-info'],
+                        'completed' => ['text' => 'Đã giao', 'class' => 'badge badge-success'],
+                        'cancelled' => ['text' => 'Đã huỷ', 'class' => 'badge badge-secondary'],
+                    ];
+                    $meta = $statusMap[$status] ?? ['text' => ucfirst($status), 'class' => 'badge badge-light'];
+                    ?>
+                    <span class="<?= $meta['class'] ?> mt-2"><?= htmlspecialchars($meta['text']) ?></span>
                 </div>
                 <div>
                     <a href="admin.php?page=bills" class="btn btn-secondary">Trở lại danh sách</a>

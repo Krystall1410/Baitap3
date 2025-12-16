@@ -147,6 +147,8 @@ try {
     $stmt->close();
 
     $itemStmt = $mysqli->prepare("INSERT INTO invoice_items (invoice_id, product_id, product_name, unit_price, quantity, total_price) VALUES (?,?,?,?,?,?)");
+    $stockStmt = $mysqli->prepare("UPDATE products SET stock = CASE WHEN stock IS NULL THEN NULL ELSE stock - ? END WHERE id = ? AND (stock IS NULL OR stock >= ?)");
+
     foreach ($cartItems as $item) {
         $productId = isset($item['id']) ? (int)$item['id'] : null;
         $name = isset($item['name']) ? $item['name'] : 'Sản phẩm';
@@ -156,10 +158,20 @@ try {
             $quantity = 1;
         }
         $lineTotal = $price * $quantity;
+
+        if ($productId) {
+            $stockStmt->bind_param('iii', $quantity, $productId, $quantity);
+            $stockStmt->execute();
+            if ($stockStmt->affected_rows === 0) {
+                throw new RuntimeException('Sản phẩm "' . $name . '" không đủ số lượng trong kho.');
+            }
+        }
+
         $itemStmt->bind_param('iisdid', $invoiceId, $productId, $name, $price, $quantity, $lineTotal);
         $itemStmt->execute();
     }
     $itemStmt->close();
+    $stockStmt->close();
 
     $mysqli->commit();
 
@@ -175,7 +187,11 @@ try {
         $mysqli->rollback();
     }
     error_log('Checkout error: ' . $e->getMessage());
-    $_SESSION['checkout_error'] = 'Không thể xử lý đơn hàng. Vui lòng thử lại.';
+    $customerMessage = 'Không thể xử lý đơn hàng. Vui lòng thử lại.';
+    if ($e instanceof RuntimeException) {
+        $customerMessage = $e->getMessage();
+    }
+    $_SESSION['checkout_error'] = $customerMessage;
     header('Location: /baitap3/view/checkout.php');
     exit;
 }
