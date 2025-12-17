@@ -7,7 +7,7 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-
+// Lấy danh sách danh mục hiện có để render bảng quản trị
 $sql = "SELECT id, name, slug FROM categories ORDER BY name ASC";
 $res = $mysqli->query($sql);
 $stt = 1;

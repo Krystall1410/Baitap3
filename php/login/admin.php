@@ -111,7 +111,7 @@ if ($page == 'process_product') {
                         <ul class="collapse list-unstyled" id="dashboard">
                            <li><a href="admin.php?page=products">Danh sách sản phẩm</a></li>                           
                            <li><a href="admin.php?page=brands">Danh sách thương hiệu</a></li>
-                           <li><a href="admin.php?page=categories">Danh sách thể loại</a></li>
+                           <li><a href="admin.php?page=categories">Danh sách danh mục</a></li>
                            <li><a href="admin.php?page=users">Tài khoản người dùng</a></li>
 
                         </ul>

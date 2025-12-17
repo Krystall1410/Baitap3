@@ -7,6 +7,7 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
 $id = $_GET['id'] ?? null;
 $category = ['name'=>''];
 
+// Ưu tiên dùng lại dữ liệu đã nhập để form giữ trạng thái khi phát sinh lỗi xác thực
 if (isset($_SESSION['form_data'])) {
     $category = array_merge($category, $_SESSION['form_data']);
     unset($_SESSION['form_data']);

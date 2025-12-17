@@ -22,18 +22,21 @@ if (isset($_SESSION['form_data'])) {
     $stmt->close();
 }
 
-// Lấy danh sách danh mục
+// Lấy danh sách danh mục để render dropdown lựa chọn
+// Duy trì danh sách này giúp form hiển thị đúng khi tạo mới hoặc chỉnh sửa sản phẩm
 $categories = [];
 $cat_res = $mysqli->query("SELECT id, name FROM categories ORDER BY name ASC");
 while ($cat_row = $cat_res->fetch_assoc()) $categories[] = $cat_row;
 
-// Lấy danh sách thương hiệu
+// Lấy danh sách thương hiệu đang bật để gán cho sản phẩm
+// Chỉ lấy thương hiệu đang hoạt động để tránh chọn nhầm thương hiệu đã bị khóa
 $brands = [];
 $brand_res = $mysqli->query("SELECT id, name FROM brands WHERE is_active = 1 ORDER BY name ASC");
 while ($brand_row = $brand_res->fetch_assoc()) $brands[] = $brand_row;
 
 // --- KẾT THÚC THAY ĐỔI ---
 ?>
+<?php // Vùng hiển thị form giúp admin tạo mới hoặc cập nhật sản phẩm trong cùng giao diện ?>
 <div class="white_shd full margin_bottom_30">
    <div class="full graph_head">
       <div class="heading1 margin_0">

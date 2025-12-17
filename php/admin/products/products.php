@@ -7,7 +7,7 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-// phân trang
+// Chuẩn bị phân trang danh sách sản phẩm trong trang quản trị
 $perPage = 6;
 $currentPage = isset($_GET['p']) ? (int)$_GET['p'] : 1;
 if ($currentPage < 1) {
@@ -24,7 +24,7 @@ if ($currentPage > $totalPages) {
 
 $offset = ($currentPage - 1) * $perPage;
 
-// lấy danh sách phân trang
+// Lấy dữ liệu hiển thị cho bảng sản phẩm theo trang hiện tại
 $stmt = $mysqli->prepare("SELECT p.id, p.name, p.price, p.stock, p.image, p.is_active, b.name AS brand_name FROM products p LEFT JOIN brands b ON p.brand_id = b.id ORDER BY p.created_at DESC LIMIT ? OFFSET ?");
 $stmt->bind_param('ii', $perPage, $offset);
 $stmt->execute();

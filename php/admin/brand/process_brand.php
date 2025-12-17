@@ -10,11 +10,11 @@ $name = trim($_POST['name'] ?? '');
 $is_active = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
 
 if ($id) {
-    // Chỉnh sửa
+    // Cập nhật thương hiệu hiện có theo ID gửi lên
     $stmt = $mysqli->prepare("UPDATE brands SET name=?, is_active=?, updated_at=NOW() WHERE id=?");
     $stmt->bind_param("sii", $name, $is_active, $id);
 } else {
-    // Thêm mới
+    // Thêm bản ghi thương hiệu mới
     $stmt = $mysqli->prepare("INSERT INTO brands (name, is_active) VALUES (?,?)");
     $stmt->bind_param("si", $name, $is_active);
 }

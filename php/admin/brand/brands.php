@@ -7,7 +7,7 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     exit;
 }
 
-// lấy danh sách
+// Lấy toàn bộ thương hiệu để hiển thị trong bảng quản trị
 $sql = "SELECT id, name, is_active FROM brands ORDER BY name ASC";
 $res = $mysqli->query($sql);
 $stt = 1; // Bắt đầu số thứ tự từ 1
