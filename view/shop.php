@@ -126,6 +126,20 @@ $offset = ($current_page - 1) * $products_per_page;
         .single-product-wrapper .product-img a:focus img {
             opacity: 0.85;
         }
+
+        .single-product-wrapper .product-img {
+            height: 380px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .single-product-wrapper .product-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 
 </head>
@@ -607,6 +621,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
     });
     </script>
+
 </body>
 
 </html>
