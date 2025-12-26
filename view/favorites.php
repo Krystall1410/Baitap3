@@ -78,6 +78,7 @@ if (!empty($favorites)) {
 
     <link rel="icon" href="../img/core-img/favicon.ico">
 
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/core-style.css">
     <link rel="stylesheet" href="../css/style.css">
 

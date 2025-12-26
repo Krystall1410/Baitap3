@@ -1,9 +1,41 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css');
 
 body, h1, h2, h3, h4, h5, h6, p, a, span, li, input, button {
   font-family: 'Roboto', sans-serif !important;
 }
 html, body, * {
   font-family: 'Roboto', Arial, sans-serif !important;
+}
+
+/* Place newsletter input and button inline without spacing */
+.newsletter-form form {
+  display: flex;
+  align-items: center;
+}
+.newsletter-form .nl-email {
+  flex: 1;
+  min-width: 0;
+  height: 40px !important;
+  line-height: 40px;
+  padding: 10px 12px;
+  box-sizing: border-box;
+}
+.newsletter-form button,
+.newsletter-form .btn {
+  height: 40px !important;
+  min-height: 40px !important;
+  line-height: 40px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+/* Keep icon font from being overridden by global Roboto */
+.fa, .fa:before, .fa:after {
+  font-family: 'FontAwesome' !important;
+  font-style: normal;
 }
 
 /* Shared My Account dropdown styles */
@@ -53,4 +85,5 @@ html, body, * {
   color: #c07a00;
   background-color: #fff8e6;
 }
+
 

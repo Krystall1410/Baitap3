@@ -13,7 +13,7 @@ if (!is_array($status)) {
 unset($_SESSION['user_role_status']);
 
 $users = [];
-$query = $mysqli->query("SELECT id, username, role FROM users ORDER BY id ASC");
+$query = $mysqli->query("SELECT id, username, email, role FROM users ORDER BY id ASC");
 if ($query instanceof mysqli_result) {
     $users = $query->fetch_all(MYSQLI_ASSOC);
     $query->free();
@@ -46,6 +46,7 @@ if ($query instanceof mysqli_result) {
                <tr>
                   <th>#</th>
                   <th>Tên đăng nhập</th>
+                  <th>Email</th>
                   <th>Quyền hiện tại</th>
                   <th class="text-center">Cập nhật quyền</th>
                </tr>
@@ -53,27 +54,33 @@ if ($query instanceof mysqli_result) {
             <tbody>
                <?php if (empty($users)): ?>
                <tr>
-                  <td colspan="4" class="text-center">Chưa có tài khoản nào.</td>
+                  <td colspan="5" class="text-center">Chưa có tài khoản nào.</td>
                </tr>
                <?php else: ?>
                   <?php foreach ($users as $index => $user): ?>
                   <tr>
                      <td><?php echo $index + 1; ?></td>
                      <td><?php echo htmlspecialchars($user['username'], ENT_QUOTES, 'UTF-8'); ?></td>
+                     <td><?php echo htmlspecialchars($user['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
                      <td>
                         <span class="badge badge-<?php echo $user['role'] === 'admin' ? 'primary' : 'secondary'; ?>">
                            <?php echo htmlspecialchars($user['role'], ENT_QUOTES, 'UTF-8'); ?>
                         </span>
                      </td>
                      <td>
-                        <form class="d-flex align-items-center justify-content-end" method="post" action="admin.php?page=process_user_role">
-                           <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
-                           <select class="form-control form-control-sm mr-2" name="role">
-                              <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
-                              <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
-                           </select>
-                           <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
-                        </form>
+                        <div class="d-flex align-items-center justify-content-end">
+                           <form class="d-flex align-items-center mb-0" method="post" action="admin.php?page=process_user_role">
+                              <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                              <select class="form-control form-control-sm mr-2" name="role">
+                                 <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>User</option>
+                                 <option value="admin" <?php echo $user['role'] === 'admin' ? 'selected' : ''; ?>>Admin</option>
+                              </select>
+                              <button type="submit" class="btn btn-sm btn-primary">Lưu</button>
+                           </form>
+                           <form class="d-inline-block mb-0 ml-2" method="post" action="admin.php?page=delete_user&id=<?php echo $user['id']; ?>" onsubmit="return confirm('Bạn có chắc muốn xóa tài khoản này?');">
+                              <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                           </form>
+                        </div>
                      </td>
                   </tr>
                   <?php endforeach; ?>

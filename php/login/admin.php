@@ -35,6 +35,9 @@ if ($page == 'process_product') {
 } else if ($page == 'process_user_role') {
    include('../admin/user/process_user_role.php');
 
+} else if ($page == 'delete_user') {
+   include('../admin/user/delete_user.php');
+
 }
 
 

@@ -76,6 +76,7 @@ if (!empty($cart_items)) {
     <link rel="icon" href="../img/core-img/favicon.ico">
 
     
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/core-style.css">
     <link rel="stylesheet" href="../css/style.css">
 
@@ -343,9 +344,9 @@ if (!empty($cart_items)) {
                 
                 <div class="col-12 col-lg-6 col-xl-5">
                     <div class="newsletter-form mb-100">
-                        <form action="#" method="post">
+                        <form action="../php/login/register.php" method="get">
                             <input type="email" name="email" class="nl-email" placeholder="Email của bạn">
-                            <input type="submit" value="Đăng ký">
+                            <button type="submit" class="btn amado-btn">Đăng ký</button>
                         </form>
                     </div>
                 </div>

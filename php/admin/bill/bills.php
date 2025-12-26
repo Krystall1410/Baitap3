@@ -80,14 +80,17 @@ $result = $mysqli->query($sql);
                                     ?>
                                     <span class="<?= $meta['class'] ?>"><?= htmlspecialchars($meta['text']) ?></span>
                                 </td>
-                                <td style="min-width: 120px;">
-                                    <a class="btn btn-sm btn-primary" href="admin.php?page=bill_detail&id=<?= (int)$row['id'] ?>">Xem</a>
+                                <td style="min-width: 170px;">
+                                    <a class="btn btn-sm btn-primary mr-2" href="admin.php?page=bill_detail&id=<?= (int)$row['id'] ?>">Xem</a>
+                                    <form class="d-inline-block" method="post" action="admin.php?page=delete_bill&id=<?= (int)$row['id'] ?>" onsubmit="return confirm('Xóa hóa đơn này?');">
+                                        <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                    </form>
                                 </td>
                             </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="text-center">Chưa có hoá đơn nào được ghi nhận.</td>
+                            <td colspan="8" class="text-center">Chưa có hoá đơn nào được ghi nhận.</td>
                         </tr>
                     <?php endif; ?>
                 </tbody>

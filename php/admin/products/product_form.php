@@ -4,8 +4,33 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
     header('Location: /baitap3/php/login/login.php'); exit;
 }
 
+// Đảm bảo có cột specs để tách riêng thông số kỹ thuật
+$specsColumn = $mysqli->query("SHOW COLUMNS FROM products LIKE 'specs'");
+if ($specsColumn && $specsColumn->num_rows === 0) {
+   $mysqli->query("ALTER TABLE products ADD COLUMN specs TEXT NULL AFTER description");
+}
+if ($specsColumn instanceof mysqli_result) {
+   $specsColumn->free();
+}
+
 $id = $_GET['id'] ?? null;
-$product = ['name'=>'','description'=>'','price'=>'0.00','stock'=>0,'is_active'=>1,'image'=>null, 'category_id' => null, 'brand_id' => null];
+$product = [
+   'name' => '',
+   'description' => '',
+   'specs' => '',
+   'price' => '0.00',
+   'stock' => 0,
+   'is_active' => 1,
+   'image' => null,
+   'category_id' => null,
+   'brand_id' => null
+];
+
+// Biến tạm để bind vào form thông số kỹ thuật chi tiết
+$specMaterial = '';
+$specWidth = '';
+$specHeight = '';
+$specWarranty = '';
 
 // --- BẮT ĐẦU THAY ĐỔI ---
 // Nếu có lỗi từ session (do slug trùng), lấy lại dữ liệu cũ
@@ -14,12 +39,26 @@ if (isset($_SESSION['form_data'])) {
     unset($_SESSION['form_data']);
 } else if ($id) {
     // Nếu không có lỗi và có ID, lấy dữ liệu từ DB
-    $stmt = $mysqli->prepare("SELECT id,name,description,price,stock,is_active,image,category_id,brand_id FROM products WHERE id = ?");
+   $stmt = $mysqli->prepare("SELECT id,name,description,specs,price,stock,is_active,image,category_id,brand_id FROM products WHERE id = ?");
     $stmt->bind_param("i",$id);
     $stmt->execute();
     $res = $stmt->get_result();
     if ($res->num_rows) $product = $res->fetch_assoc();
     $stmt->close();
+}
+
+// Tách thông số đang lưu (nếu có) để hiển thị vào các input riêng
+if (!empty($product['specs'])) {
+   if (preg_match('/Chất\s*liệu:\s*(.+)/i', $product['specs'], $m)) {
+      $specMaterial = trim($m[1]);
+   }
+   if (preg_match('/Kích\s*thước:\s*([0-9]+(?:[.,][0-9]+)?)\s*cm\s*x\s*([0-9]+(?:[.,][0-9]+)?)\s*cm/i', $product['specs'], $m)) {
+      $specWidth = str_replace(',', '.', trim($m[1]));
+      $specHeight = str_replace(',', '.', trim($m[2]));
+   }
+   if (preg_match('/Bảo\s*hành:\s*([0-9]+(?:[.,][0-9]+)?)/i', $product['specs'], $m)) {
+      $specWarranty = str_replace(',', '.', trim($m[1]));
+   }
 }
 
 // Lấy danh sách danh mục để render dropdown lựa chọn
@@ -59,6 +98,34 @@ while ($brand_row = $brand_res->fetch_assoc()) $brands[] = $brand_row;
          <div class="form-group">
             <label>Mô tả ngắn</label>
             <textarea name="description" class="form-control"><?= htmlspecialchars($product['description']) ?></textarea>
+         </div>
+         <div class="form-group">
+            <label>Thông số kỹ thuật</label>
+            <div class="form-row">
+               <div class="col-12 col-md-6 mb-2 mb-md-0">
+                  <label class="mb-1">Chất liệu</label>
+                  <input type="text" name="spec_material" class="form-control" value="<?= htmlspecialchars($specMaterial) ?>" >
+               </div>
+               <div class="col-12 col-md-6">
+                  <label class="mb-1">Kích thước</label>
+                  <div class="form-row align-items-center">
+                     <div class="col">
+                        <input type="number" step="0.01" min="0" name="spec_width" class="form-control" value="<?= htmlspecialchars($specWidth) ?>" placeholder="..." aria-label="Chiều rộng (cm)">
+                     </div>
+                     <div class="col-auto">cm x</div>
+                     <div class="col">
+                        <input type="number" step="0.01" min="0" name="spec_height" class="form-control" value="<?= htmlspecialchars($specHeight) ?>" placeholder="..." aria-label="Chiều dài (cm)">
+                     </div>
+                     <div class="col-auto">cm</div>
+                  </div>
+               </div>
+            </div>
+            <div class="form-row mt-2">
+               <div class="col-12 col-md-4">
+                  <label class="mb-1">Bảo hành (năm)</label>
+                  <input type="number" step="0.1" min="0" name="spec_warranty" class="form-control" value="<?= htmlspecialchars($specWarranty) ?>" placeholder="..." aria-label="Thời gian bảo hành (năm)">
+               </div>
+            </div>
          </div>
          <div class="form-group">
             <label>Danh mục</label>

@@ -126,6 +126,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap&subset=vietnamese" rel="stylesheet">
     
     <title>Nội thất đẹp Raumania|Chi tiết sản phẩm</title>
 
@@ -133,6 +134,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     <link rel="icon" href="../img/core-img/favicon.ico">
 
     
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
     <link rel="stylesheet" href="../css/core-style.css">
     <link rel="stylesheet" href="../css/style.css">
 
@@ -166,6 +168,14 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         }
         .favorite-notice {
             color: #2b8a3e;
+            font-size: 14px;
+        }
+        /* Make product description text slightly smaller for readability */
+        .short_overview p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .short_overview ul li {
             font-size: 14px;
         }
     </style>
@@ -355,6 +365,18 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                             
                             <div class="short_overview my-5">
                                 <p><?php echo htmlspecialchars($product['description']); ?></p>
+                                <?php if (!empty($product['specs'])): ?>
+                                    <hr>
+                                    <h6>Thông số kỹ thuật</h6>
+                                    <?php $specLines = array_filter(array_map('trim', preg_split('/\r?\n/', $product['specs']))); ?>
+                                    <?php if ($specLines): ?>
+                                        <ul class="list-unstyled mb-0">
+                                            <?php foreach ($specLines as $line): ?>
+                                                <li><?php echo htmlspecialchars($line); ?></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    <?php endif; ?>
+                                <?php endif; ?>
                             </div>
                             <!-- Add to Cart Form -->
 
@@ -394,9 +416,9 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                 
                 <div class="col-12 col-lg-6 col-xl-5">
                     <div class="newsletter-form mb-100">
-                        <form action="#" method="post">
+                        <form action="../php/login/register.php" method="get">
                             <input type="email" name="email" class="nl-email" placeholder="Email của bạn">
-                            <input type="submit" value="Đăng ký">
+                            <button type="submit" class="btn amado-btn">Đăng ký</button>
                         </form>
                     </div>
                 </div>

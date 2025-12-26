@@ -39,6 +39,27 @@ if (empty($_SESSION['loggedin']) || ($_SESSION['role'] ?? '') !== 'admin') {
 $id = isset($_POST['id']) && $_POST['id'] !== '' ? (int)$_POST['id'] : null;
 $name = trim($_POST['name'] ?? '');
 $description = $_POST['description'] ?? '';
+$spec_material = trim($_POST['spec_material'] ?? '');
+$spec_width = $_POST['spec_width'] ?? '';
+$spec_height = $_POST['spec_height'] ?? '';
+$spec_warranty = $_POST['spec_warranty'] ?? '';
+
+// Chuẩn hóa số và ghép thông số lại thành chuỗi lưu DB
+$spec_width = ($spec_width !== '') ? max(0, (float)str_replace(',', '.', $spec_width)) : null;
+$spec_height = ($spec_height !== '') ? max(0, (float)str_replace(',', '.', $spec_height)) : null;
+$spec_warranty = ($spec_warranty !== '') ? max(0, (float)str_replace(',', '.', $spec_warranty)) : null;
+
+$spec_parts = [];
+if ($spec_material !== '') {
+    $spec_parts[] = 'Chất liệu: ' . $spec_material;
+}
+if ($spec_width !== null && $spec_height !== null) {
+    $spec_parts[] = 'Kích thước: ' . rtrim(rtrim(number_format($spec_width, 2, '.', ''), '0'), '.') . 'cm x ' . rtrim(rtrim(number_format($spec_height, 2, '.', ''), '0'), '.') . 'cm';
+}
+if ($spec_warranty !== null) {
+    $spec_parts[] = 'Bảo hành: ' . rtrim(rtrim(number_format($spec_warranty, 1, '.', ''), '0'), '.') . ' năm';
+}
+$specs = implode("\n", $spec_parts);
 $price = (float)($_POST['price'] ?? 0);
 $stock = (int)($_POST['stock'] ?? 0);
 $is_active = isset($_POST['is_active']) ? (int)$_POST['is_active'] : 1;
@@ -47,6 +68,15 @@ $brand_id = !empty($_POST['brand_id']) ? (int)$_POST['brand_id'] : null;
 
 $upload_dir = dirname(__DIR__, 3) . '/uploads/products';
 $image_name = isset($_FILES['image']) ? move_upload_file($_FILES['image'], $upload_dir) : null;
+
+// Đảm bảo có cột specs để lưu riêng thông số kỹ thuật
+$specsColumn = $mysqli->query("SHOW COLUMNS FROM products LIKE 'specs'");
+if ($specsColumn && $specsColumn->num_rows === 0) {
+    $mysqli->query("ALTER TABLE products ADD COLUMN specs TEXT NULL AFTER description");
+}
+if ($specsColumn instanceof mysqli_result) {
+    $specsColumn->free();
+}
 
 if ($id) {
     // Chỉnh sửa sản phẩm
@@ -69,12 +99,12 @@ if ($id) {
         $image_name = $old_image;
     }
 
-    $stmt = $mysqli->prepare("UPDATE products SET name=?, description=?, price=?, stock=?, category_id=?, brand_id=?, is_active=?, image=?, updated_at=NOW() WHERE id=?");
-    $stmt->bind_param("ssdiisisi", $name, $description, $price, $stock, $category_id, $brand_id, $is_active, $image_name, $id);
+    $stmt = $mysqli->prepare("UPDATE products SET name=?, description=?, specs=?, price=?, stock=?, category_id=?, brand_id=?, is_active=?, image=?, updated_at=NOW() WHERE id=?");
+    $stmt->bind_param("sssdiiiisi", $name, $description, $specs, $price, $stock, $category_id, $brand_id, $is_active, $image_name, $id);
 } else {
     // Thêm mới sản phẩm
-    $stmt = $mysqli->prepare("INSERT INTO products (name,description,price,stock,category_id,brand_id,is_active,image) VALUES (?,?,?,?,?,?,?,?)");
-    $stmt->bind_param("ssdiisis", $name, $description, $price, $stock, $category_id, $brand_id, $is_active, $image_name);
+    $stmt = $mysqli->prepare("INSERT INTO products (name,description,specs,price,stock,category_id,brand_id,is_active,image) VALUES (?,?,?,?,?,?,?,?,?)");
+    $stmt->bind_param("sssdiiiis", $name, $description, $specs, $price, $stock, $category_id, $brand_id, $is_active, $image_name);
 }
 
 if ($stmt) {
