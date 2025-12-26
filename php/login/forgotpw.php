@@ -9,23 +9,26 @@ require_once __DIR__ . '/config.php';
 
 $resetMessage = '';
 $resetMessageType = '';
-$resetUsernameValue = '';
+$resetEmailValue = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $resetUsername = trim($_POST['reset_username'] ?? '');
+    $resetEmail = trim($_POST['reset_email'] ?? '');
     $resetPassword = $_POST['reset_password'] ?? '';
-    $resetUsernameValue = $resetUsername;
+    $resetEmailValue = $resetEmail;
 
-    if ($resetUsername === '' || $resetPassword === '') {
-        $resetMessage = 'Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu mới.';
+    if ($resetEmail === '' || $resetPassword === '') {
+        $resetMessage = 'Vui lòng nhập đầy đủ email và mật khẩu mới.';
+        $resetMessageType = 'error';
+    } elseif (!filter_var($resetEmail, FILTER_VALIDATE_EMAIL)) {
+        $resetMessage = 'Email không hợp lệ.';
         $resetMessageType = 'error';
     } elseif (strlen($resetPassword) < 6) {
         $resetMessage = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
         $resetMessageType = 'error';
     } else {
-        $checkStmt = $mysqli->prepare('SELECT id, password FROM users WHERE username = ?');
+        $checkStmt = $mysqli->prepare('SELECT id, password FROM users WHERE email = ?');
         if ($checkStmt) {
-            $checkStmt->bind_param('s', $resetUsername);
+            $checkStmt->bind_param('s', $resetEmail);
             $checkStmt->execute();
             $checkStmt->store_result();
 
@@ -45,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         if ($updateStmt->execute()) {
                             $resetMessage = 'Đã đặt mật khẩu mới thành công.';
                             $resetMessageType = 'success';
-                            $resetUsernameValue = '';
+                            $resetEmailValue = '';
                         } else {
                             $resetMessage = 'Không thể cập nhật mật khẩu. Vui lòng thử lại sau.';
                             $resetMessageType = 'error';
@@ -57,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
             } else {
-                $resetMessage = 'Không tìm thấy tài khoản với tên đăng nhập đã nhập.';
+                $resetMessage = 'Không tìm thấy tài khoản với email đã nhập.';
                 $resetMessageType = 'error';
             }
 
@@ -105,27 +108,41 @@ if (isset($mysqli) && $mysqli instanceof mysqli) {
             color: #666;
             font-size: 14px;
         }
-        .reset-container input[type="text"],
+        .reset-container input[type="email"],
         .reset-container input[type="password"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .reset-container input:focus {
+            outline: none;
+            border-color: #fbb710;
+            box-shadow: 0 0 0 3px rgba(251, 183, 16, 0.18);
         }
         .reset-container button {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             border: none;
-            border-radius: 4px;
-            background-color: #fbb710;
-            color: white;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #ffc833, #f5b000);
+            color: #fff;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            box-shadow: 0 10px 18px rgba(0,0,0,0.08);
         }
         .reset-container button:hover {
-            background-color: #c9960c;
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(0,0,0,0.12);
+        }
+        .reset-container button:active {
+            transform: translateY(0);
+            box-shadow: 0 10px 18px rgba(0,0,0,0.08);
         }
         .message {
             margin-bottom: 15px;
@@ -158,7 +175,7 @@ if (isset($mysqli) && $mysqli instanceof mysqli) {
 <body>
     <div class="reset-container">
         <h2>Đặt lại mật khẩu</h2>
-        <p class="description">Nhập tên đăng nhập và mật khẩu mới để đặt lại tài khoản của bạn.</p>
+        <p class="description">Nhập email đã đăng ký và mật khẩu mới để đặt lại tài khoản của bạn.</p>
         <?php if ($resetMessage !== ''): ?>
             <div class="message <?php echo $resetMessageType === 'success' ? 'success' : 'error'; ?>">
                 <?php echo htmlspecialchars($resetMessage, ENT_QUOTES, 'UTF-8'); ?>
@@ -166,7 +183,7 @@ if (isset($mysqli) && $mysqli instanceof mysqli) {
         <?php endif; ?>
         <?php if ($resetMessageType !== 'success'): ?>
             <form action="forgotpw.php" method="post">
-                <input type="text" name="reset_username" placeholder="Tên đăng nhập" value="<?php echo htmlspecialchars($resetUsernameValue, ENT_QUOTES, 'UTF-8'); ?>" required>
+                <input type="email" name="reset_email" placeholder="Email đã đăng ký" value="<?php echo htmlspecialchars($resetEmailValue, ENT_QUOTES, 'UTF-8'); ?>" required>
                 <input type="password" name="reset_password" placeholder="Mật khẩu mới" required>
                 <button type="submit">Đặt lại mật khẩu</button>
             </form>

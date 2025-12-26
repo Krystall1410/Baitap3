@@ -2,6 +2,50 @@
 session_start();
 require_once __DIR__ . '/../php/login/config.php';
 $product = null;
+$favorite_notice = $_SESSION['favorite_notice'] ?? '';
+unset($_SESSION['favorite_notice']);
+
+if (!isset($_SESSION['favorites']) || !is_array($_SESSION['favorites'])) {
+    $_SESSION['favorites'] = [];
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_favorites'])) {
+    $favorite_product_id = (int)$_POST['add_to_favorites'];
+
+    if ($favorite_product_id > 0) {
+        $stmt = $mysqli->prepare("SELECT id, name, price, image FROM products WHERE id = ? AND is_active = 1");
+        $stmt->bind_param("i", $favorite_product_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $favorite_product = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($favorite_product) {
+            $_SESSION['favorites'][$favorite_product_id] = [
+                'id' => (int)$favorite_product['id'],
+                'name' => $favorite_product['name'],
+                'price' => (float)$favorite_product['price'],
+                'image' => '/baitap3/uploads/products/' . ltrim($favorite_product['image'], '/'),
+                'added_at' => time()
+            ];
+            $_SESSION['favorite_notice'] = 'Sản phẩm đã được thêm vào yêu thích.';
+        }
+    }
+
+    header('Location: product-details.php?id=' . $favorite_product_id . '#favorite');
+    exit();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_favorite'])) {
+    $remove_favorite_id = (int)$_POST['remove_favorite'];
+    if (isset($_SESSION['favorites'][$remove_favorite_id])) {
+        unset($_SESSION['favorites'][$remove_favorite_id]);
+        $_SESSION['favorite_notice'] = 'Đã gỡ sản phẩm khỏi danh sách yêu thích.';
+    }
+
+    header('Location: product-details.php?id=' . $remove_favorite_id . '#favorite');
+    exit();
+}
 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
@@ -53,6 +97,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['addtocart'])) {
         }
     }
 }
+$is_favorited = false;
+
 if (isset($_GET['id']) && !empty($_GET['id'])) {
     $product_id = intval($_GET['id']);
 
@@ -64,6 +110,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
         if ($result->num_rows > 0) {
             $product = $result->fetch_assoc();
+            $is_favorited = isset($_SESSION['favorites'][$product_id]);
         }
         $stmt->close();
     }
@@ -87,33 +134,39 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
     
     <link rel="stylesheet" href="../css/core-style.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/style.css">
 
     <style>
-        /* Tùy chỉnh cho menu My Account */
-        .account-nav {
-            font-size: 16px;
-            color: #242424;
-            font-weight: 500;
-            text-transform: uppercase;
-            padding-left: 15px;
-            display: inline-block;
+        /* Account styles moved to global css/style.css */
+        .favorite-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 11px 22px;
+            min-width: 170px;
+            border-radius: 999px;
+            font-weight: 600;
+            letter-spacing: 0.15px;
+            box-shadow: 0 10px 18px rgba(0,0,0,0.08);
+            transition: all 0.2s ease;
         }
-        .account-nav:hover, .account-nav:focus {
-            color: #fbb710;
+        .favorite-btn.outline {
+            background: #fff;
+            color: #c28600;
+            border: 1px solid #f5b000;
         }
-        .account-nav img {
-            padding-right: 5px;
+        .favorite-btn.active {
+            background: #fff;
+            color: #f5b000;
+            border: 1px solid #f5b000;
         }
-        .dropdown-menu {
-            border: none;
-            border-radius: 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            margin-top: 10px !important;
+        .favorite-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(0,0,0,0.12);
         }
-        .dropdown-item:hover, .dropdown-item:focus {
-            color: #fbb710;
-            background-color: #f8f9fa;
+        .favorite-notice {
+            color: #2b8a3e;
+            font-size: 14px;
         }
     </style>
 
@@ -192,7 +245,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                         }
                         echo $cart_count;
                     ?>)</span></a>
-                
+                <a href="favorites.php" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -275,7 +328,8 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                     <h6><?php echo htmlspecialchars($product['name']); ?></h6>
                                 </a>
                                 
-                                <div class="ratings-review mb-15 d-flex align-items-center justify-content-between">
+                                <div class="ratings-review mb-15 d-flex align-items-center justify-content-end">
+                                    <!--
                                     <div class="ratings">
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                         <i class="fa fa-star" aria-hidden="true"></i>
@@ -283,10 +337,18 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                     </div>
-                                    <div class="review">
-                                        <a href="#">Đánh giá</a>
-                                    </div>
+                                    -->
+                                    <form id="favorite" class="mb-0" action="product-details.php?id=<?php echo $product['id']; ?>#favorite" method="post">
+                                        <?php if ($is_favorited): ?>
+                                            <button type="submit" name="remove_favorite" value="<?php echo $product['id']; ?>" class="btn amado-btn favorite-btn active">Bỏ yêu thích</button>
+                                        <?php else: ?>
+                                            <button type="submit" name="add_to_favorites" value="<?php echo $product['id']; ?>" class="btn amado-btn favorite-btn outline">Yêu thích</button>
+                                        <?php endif; ?>
+                                    </form>
                                 </div>
+                                <?php if ($favorite_notice): ?>
+                                     <p class="mt-2 favorite-notice"><?php echo htmlspecialchars($favorite_notice); ?></p>
+                                <?php endif; ?>
                                 
                                 <p class="avaibility"><i class="fa fa-circle"></i> Còn hàng<?php if (isset($product['stock'])): ?> (<?= (int)$product['stock']; ?>)<?php endif; ?></p>
                             </div>

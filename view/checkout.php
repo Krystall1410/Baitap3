@@ -108,6 +108,7 @@ foreach ($cartItems as $item) {
     <meta name="description" content="">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap&subset=vietnamese" rel="stylesheet">
 
     
     <title>Nội thất đẹp Raumania|Thông tin thanh toán</title>
@@ -117,35 +118,7 @@ foreach ($cartItems as $item) {
 
     
     <link rel="stylesheet" href="../css/core-style.css">
-    <link rel="stylesheet" href="../style.css">
-
-    <style>
-      
-        .account-nav {
-            font-size: 16px;
-            color: #242424;
-            font-weight: 500;
-            text-transform: uppercase;
-            padding-left: 15px;
-            display: inline-block;
-        }
-        .account-nav:hover, .account-nav:focus {
-            color: #fbb710;
-        }
-        .account-nav img {
-            padding-right: 5px;
-        }
-        .dropdown-menu {
-            border: none;
-            border-radius: 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            margin-top: 10px !important;
-        }
-        .dropdown-item:hover, .dropdown-item:focus {
-            color: #fbb710;
-            background-color: #f8f9fa;
-        }
-    </style>
+    <link rel="stylesheet" href="../css/style.css">
 
 </head>
 
@@ -222,7 +195,7 @@ foreach ($cartItems as $item) {
                         }
                         echo $cart_count;
                     ?>)</span></a>
-              
+                <a href="favorites.php" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

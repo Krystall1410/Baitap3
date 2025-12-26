@@ -6,3 +6,51 @@ html, body, * {
   font-family: 'Roboto', Arial, sans-serif !important;
 }
 
+/* Shared My Account dropdown styles */
+.account-nav {
+  font-size: 16px;
+  color: #242424;
+  font-weight: 500;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid #f1f1f1;
+  border-radius: 999px;
+  padding: 10px 16px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
+  background: #fff;
+}
+.account-nav:hover,
+.account-nav:focus {
+  color: #c07a00;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+.account-nav img {
+  display: none;
+}
+.account-nav.dropdown-toggle::after {
+  display: none;
+}
+.dropdown-menu {
+  border: 1px solid #f1f1f1;
+  border-radius: 12px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+  margin-top: 12px !important;
+  padding: 8px;
+  min-width: 190px;
+}
+.dropdown-item {
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-weight: 600;
+  color: #2d2d2d;
+  transition: all 0.15s ease;
+}
+.dropdown-item:hover,
+.dropdown-item:focus {
+  color: #c07a00;
+  background-color: #fff8e6;
+}
+

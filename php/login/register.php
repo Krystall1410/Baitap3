@@ -31,27 +31,41 @@
         }
         .register-container input[type="text"],
         .register-container input[type="password"],
+        .register-container input[type="email"],
         .register-container select {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 14px;
+            border: 1px solid #e5e5e5;
+            border-radius: 6px;
             box-sizing: border-box;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .register-container input:focus {
+            outline: none;
+            border-color: #fbb710;
+            box-shadow: 0 0 0 3px rgba(251, 183, 16, 0.18);
         }
         .register-container button {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             border: none;
-            border-radius: 4px;
-            background-color: #fbb710;
-            color: white;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #ffc833, #f5b000);
+            color: #fff;
             font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: transform 0.15s ease, box-shadow 0.2s ease;
+            box-shadow: 0 10px 18px rgba(0,0,0,0.08);
         }
         .register-container button:hover {
-            background-color: #c9960c;
+            transform: translateY(-1px);
+            box-shadow: 0 14px 24px rgba(0,0,0,0.12);
+        }
+        .register-container button:active {
+            transform: translateY(0);
+            box-shadow: 0 10px 18px rgba(0,0,0,0.08);
         }
         .remember-me {
             margin-bottom: 20px;
@@ -95,6 +109,8 @@
                 echo '<p class="message success">Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.</p>';
             } elseif ($_GET['status'] == 'exists') {
                 echo '<p class="message error">Tên đăng nhập đã tồn tại!</p>';
+            } elseif ($_GET['status'] == 'emailexists') {
+                echo '<p class="message error">Email đã được đăng ký!</p>';
             } elseif ($_GET['status'] == 'error') {
                 echo '<p class="message error">Có lỗi xảy ra, vui lòng thử lại.</p>';
             }
@@ -102,8 +118,8 @@
         ?>
         <form action="process_register.php" method="post">
             <input type="text" name="username" placeholder="Tên đăng nhập" required>
+            <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Mật khẩu" required>
-            <br>
             <button type="submit">Đăng ký</button>
         </form>
         <div class="login-link">

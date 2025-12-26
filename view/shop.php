@@ -67,39 +67,8 @@ $offset = ($current_page - 1) * $products_per_page;
     <link rel="icon" href="../img/core-img/favicon.ico">
 
     <link rel="stylesheet" href="../css/core-style.css">
-    <link rel="stylesheet" href="../style.css">
+    <link rel="stylesheet" href="../css/style.css">
 
-    <style>
-    
-        .account-nav {
-            font-size: 16px;
-            color: #242424;
-            font-weight: 500;
-            text-transform: uppercase;
-            padding-left: 15px;
-            display: inline-block;
-        }
-        .account-nav:hover, .account-nav:focus {
-            color: #fbb710;
-        }
-        .account-nav img {
-            padding-right: 5px;
-        }
-        .dropdown-menu {
-            border: none;
-            border-radius: 0;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-            margin-top: 10px !important;
-        }
-        .dropdown-item {
-            font-weight: 500;
-            color: #555;
-        }
-        .dropdown-item:hover, .dropdown-item:focus {
-            color: #fbb710;
-            background-color: #f8f9fa;
-        }
-    </style>
     <style>
         .single-product-wrapper .product-img .hover-img {
             opacity: 0;
@@ -215,7 +184,7 @@ $offset = ($current_page - 1) * $products_per_page;
                         echo $cart_count;
                     ?>)</span>
                 </a>
-                
+                <a href="favorites.php" class="fav-nav"><img src="../img/core-img/favorites.png" alt=""> Yêu thích</a>
                 <a href="#" class="search-nav"><img src="../img/core-img/search.png" alt=""> Tìm kiếm</a>
                 <div class="dropdown" style="display: inline-block;">
                     <a href="#" class="account-nav dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -452,6 +421,7 @@ $offset = ($current_page - 1) * $products_per_page;
                                 </div>
                                 <!-- Đánh giá và nút thêm vào giỏ hàng -->
                                 <div class="ratings-cart text-right">
+                                    <!--
                                     <div class="ratings">
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                         <i class="fa fa-star" aria-hidden="true"></i>
@@ -459,6 +429,7 @@ $offset = ($current_page - 1) * $products_per_page;
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                         <i class="fa fa-star" aria-hidden="true"></i>
                                     </div>
+                                    -->
                                     <div class="cart">
                                         <a href="shop.php?add_to_cart=<?php echo $row['id']; ?>" data-toggle="tooltip" data-placement="left" title="Thêm vào giỏ hàng"><img src="../img/core-img/cart.png" alt=""></a>
                                     </div>
